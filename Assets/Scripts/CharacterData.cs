@@ -22,14 +22,16 @@ namespace meph {
         [Export] public SetBonusData setBonus;
     }
 
-    [GlobalClass]
-    public partial class CardData : Resource {
-        [Export] public string id;
-        [Export] public string name;
-        [Export] public string type;
-        [Export] public string description;
-        [Export] public Godot.Collections.Dictionary<string, int> requirements = new ( );
-    }
+    // Moved to it's own resource, keeping it for clarity
+
+    // [GlobalClass]
+    // public partial class CardData : Resource {
+    //     [Export] public string id;
+    //     [Export] public string name;
+    //     [Export] public string type;
+    //     [Export] public string description;
+    //     [Export] public Godot.Collections.Dictionary<string, int> requirements = new ( );
+    // }
 
     [GlobalClass]
     public partial class CharmData : Resource {
