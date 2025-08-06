@@ -1,6 +1,41 @@
-[gd_scene load_steps=2 format=3 uid="uid://cejekpj07wa7j"]
+[gd_scene load_steps=6 format=3 uid="uid://cejekpj07wa7j"]
 
 [ext_resource type="Script" uid="uid://cfj0gkd0vtkpn" path="res://Assets/Scripts/GameManager.cs" id="1_l26l0"]
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_l26l0"]
+shading_mode = 0
+albedo_color = Color(1, 0.58933336, 0.12, 1)
+
+[sub_resource type="QuadMesh" id="QuadMesh_l26l0"]
+material = SubResource("StandardMaterial3D_l26l0")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_qplxx"]
+shading_mode = 0
+albedo_color = Color(0.07999998, 1, 0.17199987, 1)
+
+[sub_resource type="QuadMesh" id="QuadMesh_elf4b"]
+material = SubResource("StandardMaterial3D_qplxx")
+
 [node name="Node" type="Node"]
 script = ExtResource("1_l26l0")
+
+[node name="Board" type="MeshInstance3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(15, 0, 0, 0, 14.059, 0, 0, 0, 0.849, 0, 0, 0)
+mesh = SubResource("QuadMesh_l26l0")
+
+[node name="Camera" type="Camera3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 15)
+
+[node name="Card" type="MeshInstance3D" parent="."]
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, -3.109422, 10.384821)
+mesh = SubResource("QuadMesh_elf4b")
+
+[node name="Card2" type="MeshInstance3D" parent="."]
+transform = Transform3D(2.8977776, -0.77645713, 0, 0.77645713, 2.8977776, 0, 0, 0, 3, -3.125, -3.4893456, 10.385232)
+mesh = SubResource("QuadMesh_elf4b")
+
+[node name="Card3" type="MeshInstance3D" parent="."]
+transform = Transform3D(2.8977776, 0.77645713, 0, -0.77645713, 2.8977776, 0, 0, 0, 3, 3.125, -2.9893456, 10.385232)
+mesh = SubResource("QuadMesh_elf4b")
