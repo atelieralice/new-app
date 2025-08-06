@@ -1,6 +1,4 @@
-[gd_scene load_steps=2 format=3 uid="uid://cejekpj07wa7j"]
-
-[ext_resource type="Script" uid="uid://ba1b2mqe1iv66" path="res://scripts/NewScript.cs" id="1_ig7tw"]
+[gd_scene format=3 uid="uid://cejekpj07wa7j"]
 
 [node name="Root" type="Control"]
 layout_mode = 3
@@ -9,7 +7,6 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_ig7tw")
 metadata/_edit_lock_ = true
 
 [node name="Label" type="Label" parent="."]

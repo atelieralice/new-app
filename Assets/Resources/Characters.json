@@ -1,0 +1,112 @@
+[
+    {
+        "charName": "Rok",
+        "star": 6,
+        "essenceType": "FIRE",
+        "weaponType": "MAGIC",
+        "maxLP": 8750,
+        "maxEP": 300,
+        "maxMP": 460,
+        "maxUP": 2,
+        "maxPotion": 3,
+        "cards": [
+            {
+                "id": "rok_c",
+                "name": "Rok",
+                "type": "C",
+                "description": "When LP is below 25% of Max LP, all attacks of Rok deals Fire Damage and gains Burning. BT is increased by 1 Turn.",
+                "requirements": {}
+            },
+            {
+                "id": "rok_bw",
+                "name": "Aura of Magic",
+                "type": "BW",
+                "description": "Deals 65 Normal Damage to opponent. If equipped by a Magic wielder, regenerates 20 MP per use.",
+                "requirements": {}
+            },
+            {
+                "id": "rok_sw",
+                "name": "Talisman of Calamity",
+                "type": "SW",
+                "description": "Deals 80 Normal Damage to opponent. If equipped by a Fire ruler, your character gains a shield which blocks only Essence Damages, DP:80 and DT:2 Turns.",
+                "requirements": {}
+            },
+            {
+                "id": "rok_e",
+                "name": "Sparking Punch",
+                "type": "E",
+                "description": "Deals 60 Normal Damage to opponent. Increases BD by 2% for 6 Turns. Duration of this effect cannot be stacked.",
+                "requirements": {
+                    "MP": 40
+                }
+            },
+            {
+                "id": "rok_w",
+                "name": "Wounding Ember",
+                "type": "W",
+                "description": "Deals 100 Fire Damage to opponent. Inflicts Burning.",
+                "requirements": {
+                    "MP": 90,
+                    "EP": 50
+                }
+            },
+            {
+                "id": "rok_q",
+                "name": "Altering Pyre",
+                "type": "Q",
+                "description": "Has 3 charges. Can be used after being activated. Gains different features according to Turns waited:\n1+ Turns: Deals 300 Fire Damage to opponent. Inflicts Burning.\n3+ Turns: Deals 5% Fire Damage to opponent. Increases BD by 4% for this instance and inflicts Burning.\n5+ Turns: Deals 10% Fire Damage to opponent. Increases BD by 4% for this instance and inflicts Burning.",
+                "requirements": {
+                    "MP": 120,
+                    "EP": 100
+                }
+            },
+            {
+                "id": "rok_p",
+                "name": "Fierceful Recover",
+                "type": "P",
+                "description": "Your character recovers 40 MP at beginning of every Turn for 4 Turns.",
+                "requirements": {}
+            },
+            {
+                "id": "rok_u",
+                "name": "Blazing Dash",
+                "type": "U",
+                "description": "Your character becomes Immune. Multiply BD by 2. (This operation is always calculated as the last step of math.) Lasts for 5 separate attacks executed by you.",
+                "requirements": {
+                    "UP": 1
+                }
+            }
+        ],
+        "charms": [
+            {
+                "id": "rok_charm1",
+                "name": "Helmet of Crimson Rage",
+                "description": "Increases BD by 1%. (+100 Essence DEF)"
+            },
+            {
+                "id": "rok_charm2",
+                "name": "Armor of Crimson Rage",
+                "description": "Increases BD by 1%. (+300 LP)"
+            },
+            {
+                "id": "rok_charm3",
+                "name": "Gloves of Crimson Rage",
+                "description": "Increases BD by 1%. (+150 Normal Damage)"
+            },
+            {
+                "id": "rok_charm4",
+                "name": "Boots of Crimson Rage",
+                "description": "Increases BD by 1%. (+100 DEF)"
+            },
+            {
+                "id": "rok_charm5",
+                "name": "Glow of Crimson Rage",
+                "description": "Increases BD by 1%. (+150 MP)"
+            }
+        ],
+        "setBonus": {
+            "setName": "Flames of Crimson Rage",
+            "description": "If all 5 Charms of Flames of Crimson Rage set are equipped, each of them increases BD by 2% instead."
+        }
+    }
+]

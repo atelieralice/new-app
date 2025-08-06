@@ -22,7 +22,9 @@ project/assembly_name="new app"
 [file_customization]
 
 folder_colors={
-"res://scripts/": "blue"
+"res://Assets/Resources/": "yellow",
+"res://Assets/Scenes/": "teal",
+"res://Assets/Scripts/": "blue"
 }
 
 [rendering]
