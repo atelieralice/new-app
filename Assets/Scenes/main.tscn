@@ -8,11 +8,3 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 metadata/_edit_lock_ = true
-
-[node name="Label" type="Label" parent="."]
-layout_mode = 0
-offset_left = 338.0
-offset_top = 221.0
-offset_right = 378.0
-offset_bottom = 244.0
-text = "text"

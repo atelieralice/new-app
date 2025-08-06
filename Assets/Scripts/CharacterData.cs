@@ -1,46 +1,46 @@
 using System;
 using System.Collections.Generic;
+using Godot;
 
-// This file is for getting character data from a json and handling it in a way that can be used by the game
 namespace meph {
 
-    [Serializable]
-    public class CharacterData {
-        public string charName;
-        public int star;
-        public string essenceType;
-        public string weaponType;
+    [GlobalClass]
+    public partial class CharacterData : Resource {
+        [Export] public string charName;
+        [Export] public Character.STAR star;
+        [Export] public Character.ESSENCE_TYPE essenceType;
+        [Export] public Character.WEAPON_TYPE weaponType;
 
-        public int maxLP;
-        public int maxEP;
-        public int maxMP;
-        public int maxUP;
-        public int maxPotion;
+        [Export] public int maxLP;
+        [Export] public int maxEP;
+        [Export] public int maxMP;
+        [Export] public int maxUP;
+        [Export] public int maxPotion;
 
-        public List<CardData> cards; // = new List<CardData>(); -> NOT NEEDED!
-        public List<CharmData> charms;
-        public SetBonusData setBonus;
+        [Export] public Godot.Collections.Array<CardData> cards = new ( );
+        [Export] public Godot.Collections.Array<CharmData> charms = new ( );
+        [Export] public SetBonusData setBonus;
     }
 
-    [Serializable]
-    public class CardData {
-        public string id;
-        public string name;
-        public string type;
-        public string description;
-        public Dictionary<string, int> requirements;
+    [GlobalClass]
+    public partial class CardData : Resource {
+        [Export] public string id;
+        [Export] public string name;
+        [Export] public string type;
+        [Export] public string description;
+        [Export] public Godot.Collections.Dictionary<string, int> requirements = new ( );
     }
 
-    [Serializable]
-    public class CharmData {
-        public string id;
-        public string name;
-        public string description;
+    [GlobalClass]
+    public partial class CharmData : Resource {
+        [Export] public string id;
+        [Export] public string name;
+        [Export] public string description;
     }
 
-    [Serializable]
-    public class SetBonusData {
-        public string setName;
-        public string description;
+    [GlobalClass]
+    public partial class SetBonusData : Resource {
+        [Export] public string setName;
+        [Export] public string description;
     }
 }

@@ -6,17 +6,18 @@ using System;
 namespace meph {
     public abstract class Character {
         public enum STAR {
-            NONE = -1,
+            NONE = 0,
             FOUR = 4,
             FIVE = 5,
             SIX = 6
         }
 
         public enum ESSENCE_TYPE {
-            NONE = -1,
+            NONE = 0,
             EARTH,
             WATER,
             ELECTRICITY,
+            NATURE,
             AIR,
             FIRE,
             ICE,
@@ -25,7 +26,7 @@ namespace meph {
         }
 
         public enum WEAPON_TYPE {
-            NONE = -1,
+            NONE = 0,
             SWORD,
             CLAYMORE,
             POLEARM,
