@@ -1,0 +1,21 @@
+[gd_scene load_steps=2 format=3 uid="uid://cejekpj07wa7j"]
+
+[ext_resource type="Script" uid="uid://ba1b2mqe1iv66" path="res://scripts/NewScript.cs" id="1_ig7tw"]
+
+[node name="Root" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_ig7tw")
+metadata/_edit_lock_ = true
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 0
+offset_left = 338.0
+offset_top = 221.0
+offset_right = 378.0
+offset_bottom = 244.0
+text = "text"
