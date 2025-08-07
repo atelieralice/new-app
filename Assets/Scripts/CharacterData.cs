@@ -17,7 +17,8 @@ namespace meph {
         [Export] public int maxUP;
         [Export] public int maxPotion;
 
-        [Export] public Godot.Collections.Array<CardData> cards = new ( );
+        // Unused, might be useful later
+        [Export] public Godot.Collections.Array<CardData> cards = [];
         [Export] public Godot.Collections.Array<CharmData> charms = new ( );
 
         [Export] public SetBonusData setBonus;

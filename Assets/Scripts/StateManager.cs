@@ -12,7 +12,7 @@ namespace meph {
     public class StateManager {
         public TURN CurrentTurn { get; private set; } = TURN.ATTACKER;
 
-        // We use events so anything we add in the future will be easier
+        // We use events so any future component we add will easily react to state changes
         // These events are handled in GameManager.cs
         public event Action OnAttackerTurn;
         public event Action OnDefenderTurn;
@@ -21,8 +21,7 @@ namespace meph {
         public bool ActionsLocked { get; private set; } = false;
 
 
-
-        // We invoke events whenever a side gets the turn
+        // We invoke an event whenever a side gets the turn
         public void NextTurn ( ) {
             ActionsLocked = false; // Clear lock at the start of each turn
             CurrentTurn = CurrentTurn == TURN.ATTACKER ? TURN.DEFENDER : TURN.ATTACKER;
@@ -34,14 +33,18 @@ namespace meph {
                 GD.Print ( "Defender's turn." );
             }
         }
+
         // Helper method to invoke the event from outside this class
         public void LockAction ( ) {
             ActionsLocked = true; // Lock actions for the rest of the turn
             OnActionLock?.Invoke ( );
         }
 
-        public bool CanAct ( ) => !ActionsLocked;
+        public bool CanAct ( ) => !ActionsLocked; // For convenience
 
+        // "Action" keyword is a built-in delegate type, which basically lets us to not 
+        // worry about defining a custom delegate. Delegates take functions as parameters
+        // Here we encapsulate the game's action logic in this method and ensure actions are only performed when allowed.
         public void TryAction ( Action action ) {
             if ( CanAct ( ) ) {
                 action ( );

@@ -3,6 +3,7 @@ using meph;
 using static meph.CharacterCreator;
 using static meph.CharacterLogic;
 
+// Basically GameManager.cs but for debugging purposes
 public partial class Debug : Node {
     public Character Attacker { get; private set; }
     public Character Defender { get; private set; }
@@ -38,8 +39,6 @@ public partial class Debug : Node {
 
         // Create and equip a test card to attacker
         var testCard = CreateTestCard ( );
-
-        // Use TryAction for equip and use
         stateManager.TryAction ( ( ) => EquipCardToSlot ( stateManager, Attacker, testCard ) );
         stateManager.TryAction ( ( ) => UseSlot ( stateManager, Attacker, CardData.TYPE.Q, Attacker, Defender ) );
 
