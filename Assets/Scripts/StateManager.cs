@@ -1,6 +1,6 @@
 using System;
 
-// This file will handle the game state
+// This file handles the game state
 namespace meph {
 
     public enum TURN {
@@ -13,10 +13,11 @@ namespace meph {
         public Character Defender { get; private set; }
         public TURN CurrentTurn { get; private set; } = TURN.ATTACKER;
 
-        // We will use events so anything we add in the future will be easier
+        // We use events so anything we add in the future will be easier
         // These events are handled in GameManager.cs
         public event Action OnAttackerTurn;
         public event Action OnDefenderTurn;
+        public event Action OnActionLock;
 
         public void SetAttacker ( Character character ) {
             Attacker = character;
@@ -39,6 +40,10 @@ namespace meph {
             } else {
                 OnDefenderTurn?.Invoke ( );
             }
+        }
+        // Helper method to invoke the event from outside this class
+        public void LockAction ( ) {
+            OnActionLock?.Invoke ( );
         }
     }
 }

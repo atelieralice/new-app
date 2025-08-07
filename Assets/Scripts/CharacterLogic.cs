@@ -13,10 +13,16 @@ namespace meph {
             }
             // Equip the card to the slot
             character.equippedSlots[card.type] = card;
-            GD.Print($"{character.charName} equipped {card.name} to {card.type} slot.");
+            GD.Print ( $"{character.charName} equipped {card.name} to {card.type} slot." );
         }
-        public static void UseSlot ( CharacterData character, CardData.TYPE slotType, Character user, Character target ) {
-            
+        public static void UseSlot ( StateManager stateManager, CharacterData character, CardData.TYPE slotType, Character user, Character target ) {
+            if ( character.equippedSlots.TryGetValue ( slotType, out CardData card ) && card != null ) {
+                if ( !card.isSwift ) { stateManager.LockAction ( ); }
+                card.Effect?.Invoke ( user, target );
+                GD.Print ( $"{character.charName} used {card.name} from {slotType} slot on {target}." );
+            } else {
+                GD.Print ( $"No card equipped in {slotType} slot." );
+            }
         }
 
     }

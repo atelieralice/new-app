@@ -1,7 +1,6 @@
-[gd_scene load_steps=7 format=3 uid="uid://cejekpj07wa7j"]
+[gd_scene load_steps=6 format=3 uid="uid://cejekpj07wa7j"]
 
 [ext_resource type="Script" uid="uid://cfj0gkd0vtkpn" path="res://Assets/Scripts/GameManager.cs" id="1_l26l0"]
-[ext_resource type="Script" uid="uid://dkcukjswihvb8" path="res://Assets/Scripts/Debug.cs" id="2_qplxx"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_l26l0"]
 shading_mode = 0
@@ -17,12 +16,8 @@ albedo_color = Color(0.07999998, 1, 0.17199987, 1)
 [sub_resource type="QuadMesh" id="QuadMesh_elf4b"]
 material = SubResource("StandardMaterial3D_qplxx")
 
-[node name="Node" type="Node"]
+[node name="Root" type="Node"]
 script = ExtResource("1_l26l0")
-
-[node name="Node" type="Node" parent="."]
-unique_name_in_owner = true
-script = ExtResource("2_qplxx")
 
 [node name="Board" type="MeshInstance3D" parent="."]
 unique_name_in_owner = true
