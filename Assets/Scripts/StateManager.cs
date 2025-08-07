@@ -1,4 +1,5 @@
 using System;
+using Godot;
 
 // This file handles the game state
 namespace meph {
@@ -44,6 +45,8 @@ namespace meph {
         // Helper method to invoke the event from outside this class
         public void LockAction ( ) {
             OnActionLock?.Invoke ( );
+            // TODO: Print this when player tries to do a action after locking
+            GD.Print ( $"Action locked!, Side: {CurrentTurn}" );
         }
     }
 }

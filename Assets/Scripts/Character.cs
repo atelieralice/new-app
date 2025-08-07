@@ -4,7 +4,7 @@ using System;
 // We could implement an interface like ITargetableEntity for future characters' skills (wink wink!). Just a reminder
 // For now I'll just go along with what I wrote, doing stuff will be faster than thinking a very complex system for that
 namespace meph {
-    public abstract class Character {
+    public class Character {
         public enum STAR {
             NONE = 0,
             FOUR = 4,
@@ -63,6 +63,10 @@ namespace meph {
         public int MP { get; internal set; }
         public int UP { get; internal set; }
         public int Potion { get; internal set; }
+
+        // Equiped cards are stored in a dictionary with their type as the key
+        public Godot.Collections.Dictionary<CardData.TYPE, CardData> EquippedSlots = new ( );
+
         // Default crit stats could be init by the game manager and different values could added as a modifier here
         // Emplty until it is decided
 
@@ -85,4 +89,20 @@ namespace meph {
     // Example:
     // if (StatusEffects.Has(Character.STATUS_EFFECT.FREEZE)) {
     // Console.WriteLine("Character is frozen");
+
+    public static class CharacterCreator {
+        public static Character InitCharacter ( CharacterData data ) {
+            var character = new Character ( );
+            character.CharName = data.charName;
+            character.Star = data.star;
+            character.EssenceType = data.essenceType;
+            character.WeaponType = data.weaponType;
+            character.LP = data.maxLP;
+            character.EP = data.maxEP;
+            character.MP = data.maxMP;
+            character.UP = data.maxUP;
+            character.Potion = data.maxPotion;
+            return character;
+        }
+    }
 }

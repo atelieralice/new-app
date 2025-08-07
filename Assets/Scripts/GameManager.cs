@@ -1,5 +1,7 @@
 using Godot;
 using meph;
+using static meph.CharacterCreator;
+using static meph.CharacterLogic;
 
 // Entry point
 public partial class GameManager : Node {
