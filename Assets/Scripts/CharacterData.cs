@@ -18,7 +18,9 @@ namespace meph {
         [Export] public int maxPotion;
 
         [Export] public Godot.Collections.Array<CardData> cards = new ( );
+        [Export] public Godot.Collections.Dictionary<CardData.TYPE, CardData> equippedSlots = new();
         [Export] public Godot.Collections.Array<CharmData> charms = new ( );
+        // Need something like card slots but for charms
         [Export] public SetBonusData setBonus;
     }
 

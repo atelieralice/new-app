@@ -12,6 +12,7 @@ namespace meph {
         [Export] public TYPE type;
         [Export] public string description;
         [Export] public Godot.Collections.Dictionary<string, int> requirements = new ( );
+        [Export] public bool isSwift;
 
         // Assigned in code
         public CardEffect Effect;

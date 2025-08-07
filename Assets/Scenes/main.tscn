@@ -1,6 +1,7 @@
-[gd_scene load_steps=6 format=3 uid="uid://cejekpj07wa7j"]
+[gd_scene load_steps=7 format=3 uid="uid://cejekpj07wa7j"]
 
 [ext_resource type="Script" uid="uid://cfj0gkd0vtkpn" path="res://Assets/Scripts/GameManager.cs" id="1_l26l0"]
+[ext_resource type="Script" uid="uid://dkcukjswihvb8" path="res://Assets/Scripts/Debug.cs" id="2_qplxx"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_l26l0"]
 shading_mode = 0
@@ -19,6 +20,10 @@ material = SubResource("StandardMaterial3D_qplxx")
 [node name="Node" type="Node"]
 script = ExtResource("1_l26l0")
 
+[node name="Node" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("2_qplxx")
+
 [node name="Board" type="MeshInstance3D" parent="."]
 unique_name_in_owner = true
 transform = Transform3D(15, 0, 0, 0, 14.059, 0, 0, 0, 0.849, 0, 0, 0)
@@ -33,9 +38,9 @@ transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, -3.109422, 10.384821)
 mesh = SubResource("QuadMesh_elf4b")
 
 [node name="Card2" type="MeshInstance3D" parent="."]
-transform = Transform3D(2.8977776, -0.77645713, 0, 0.77645713, 2.8977776, 0, 0, 0, 3, -3.125, -3.4893456, 10.385232)
+transform = Transform3D(2.8977776, -0.77645713, 0, 0.77645713, 2.8977776, 0, 0, 0, 3, -2.825, -3.4893456, 10.385232)
 mesh = SubResource("QuadMesh_elf4b")
 
 [node name="Card3" type="MeshInstance3D" parent="."]
-transform = Transform3D(2.8977776, 0.77645713, 0, -0.77645713, 2.8977776, 0, 0, 0, 3, 3.125, -2.9893456, 10.385232)
+transform = Transform3D(2.8977776, 0.77645713, 0, -0.77645713, 2.8977776, 0, 0, 0, 3, 3.1250212, -2.3693047, 10.385)
 mesh = SubResource("QuadMesh_elf4b")
