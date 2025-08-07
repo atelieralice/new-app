@@ -4,8 +4,6 @@ using Godot;
 namespace meph {
     public static class CharacterLogic {
         public static void EquipCardToSlot ( StateManager stateManager, Character character, CardData card ) {
-            // Check if the slot for the card's type is already occupied
-            // TODO: Separate null checks to another function for debugging purposes and future characters
             if ( card == null || character == null ) return;
             if ( character.EquippedSlots.TryGetValue ( card.type, out CardData value ) && value != null ) {
                 GD.Print ( $"Slot {card.type} is already occupied." );
@@ -23,9 +21,6 @@ namespace meph {
 
         public static void UseSlot ( StateManager stateManager, Character character, CardData.TYPE slotType, Character user, Character target ) {
             if ( character.EquippedSlots.TryGetValue ( slotType, out CardData card ) && card != null ) {
-                if ( !card.isSwift ) {
-                    stateManager.LockAction ( );
-                }
                 card.Effect?.Invoke ( user, target );
                 GD.Print ( $"{user.CharName} used {card.name} from {slotType} slot on {target.CharName}." );
             } else {

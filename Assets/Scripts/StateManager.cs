@@ -10,8 +10,6 @@ namespace meph {
     }
 
     public class StateManager {
-        public Character Attacker { get; private set; }
-        public Character Defender { get; private set; }
         public TURN CurrentTurn { get; private set; } = TURN.ATTACKER;
 
         // We use events so anything we add in the future will be easier
@@ -20,33 +18,37 @@ namespace meph {
         public event Action OnDefenderTurn;
         public event Action OnActionLock;
 
-        public void SetAttacker ( Character character ) {
-            Attacker = character;
-        }
+        public bool ActionsLocked { get; private set; } = false;
 
-        public void SetDefender ( Character character ) {
-            Defender = character;
-        }
 
-        public void Reset ( ) {
-            Attacker = null;
-            Defender = null;
-        }
 
         // We invoke events whenever a side gets the turn
         public void NextTurn ( ) {
+            ActionsLocked = false; // Clear lock at the start of each turn
             CurrentTurn = CurrentTurn == TURN.ATTACKER ? TURN.DEFENDER : TURN.ATTACKER;
             if ( CurrentTurn == TURN.ATTACKER ) {
                 OnAttackerTurn?.Invoke ( );
+                GD.Print ( "Attacker's turn." );
             } else {
                 OnDefenderTurn?.Invoke ( );
+                GD.Print ( "Defender's turn." );
             }
         }
         // Helper method to invoke the event from outside this class
         public void LockAction ( ) {
+            ActionsLocked = true; // Lock actions for the rest of the turn
             OnActionLock?.Invoke ( );
-            // TODO: Print this when player tries to do a action after locking
-            GD.Print ( $"Action locked!, Side: {CurrentTurn}" );
+        }
+
+        public bool CanAct ( ) => !ActionsLocked;
+
+        public void TryAction ( Action action ) {
+            if ( CanAct ( ) ) {
+                action ( );
+                LockAction ( );
+            } else {
+                GD.Print ( "Cannot act, actions are locked." );
+            }
         }
     }
 }
