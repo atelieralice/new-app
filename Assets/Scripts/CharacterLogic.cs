@@ -6,7 +6,7 @@ namespace meph {
         public static void EquipCardToSlot ( StateManager stateManager, CharacterData character, CardData card ) {
             // Check if the slot for the card's type is already occupied
             // TODO: Separate null checks to another function for debugging purposes and future characters
-            if ( card == null && character == null ) return;
+            if ( card == null || character == null ) return;
             if ( character.equippedSlots.TryGetValue ( card.type, out CardData value ) && value != null ) {
                 GD.Print ( $"Slot {card.type} is already occupied." );
                 return;
