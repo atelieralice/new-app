@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 
 // We could implement an interface like ITargetableEntity for future characters' skills (wink wink!). Just a reminder
@@ -65,7 +66,7 @@ namespace meph {
         public int Potion { get; internal set; }
 
         // Equiped cards are stored in a dictionary with their type as the key
-        public Godot.Collections.Dictionary<CardData.TYPE, CardData> EquippedSlots = new ( );
+        public Dictionary<Card.TYPE, Card> EquippedSlots = new ( );
 
         // Default crit stats could be init by the game manager and different values could added as a modifier here
         // Empty until it is decided

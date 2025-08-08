@@ -3,23 +3,23 @@ using Godot;
 
 namespace meph {
     public static class CharacterLogic {
-        public static void EquipCardToSlot ( Character character, CardData card ) {
+        public static void EquipCardToSlot ( Character character, Card card ) {
             // Null checks
             if ( card == null || character == null ) return;
-            if ( character.EquippedSlots.TryGetValue ( card.type, out CardData value ) && value != null ) {
-                GD.Print ( $"Slot {card.type} is already occupied." );
+            if ( character.EquippedSlots.TryGetValue ( card.Type, out Card value ) && value != null ) {
+                GD.Print ( $"Slot {card.Type} is already occupied." );
                 return;
             }
             // Equip the card to the slot
-            character.EquippedSlots[card.type] = card;
-            GD.Print ( $"{character.CharName} equipped {card.name} to {card.type} slot." );
+            character.EquippedSlots[card.Type] = card;
+            GD.Print ( $"{character.CharName} equipped {card.Name} to {card.Type} slot." );
         }
 
-        public static void UseSlot ( Character character, CardData.TYPE slotType, Character user, Character target ) {
-            if ( character.EquippedSlots.TryGetValue ( slotType, out CardData card ) && card != null ) {
+        public static void UseSlot ( Character character, Card.TYPE slotType, Character user, Character target ) {
+            if ( character.EquippedSlots.TryGetValue ( slotType, out Card card ) && card != null ) {
                 // Execute the card's effect
                 card.Effect?.Invoke ( user, target );
-                GD.Print ( $"{user.CharName} used {card.name} from {slotType} slot on {target.CharName}." );
+                GD.Print ( $"{user.CharName} used {card.Name} from {slotType} slot on {target.CharName}." );
             } else {
                 GD.Print ( $"No card equipped in {slotType} slot." );
             }

@@ -41,21 +41,21 @@ public partial class Debug : Node {
         // Create and equip a test card to attacker
         var testCard = CreateTestCard ( );
         stateManager.TryAction ( ( ) => EquipCardToSlot ( Attacker, testCard ) );
-        stateManager.TryAction ( ( ) => UseSlot ( Attacker, CardData.TYPE.Q, Attacker, Defender ) );
+        stateManager.TryAction ( ( ) => UseSlot ( Attacker, Card.TYPE.Q, Attacker, Defender ) );
         stateManager.NextTurn ( );
-        stateManager.TryAction ( ( ) => UseSlot ( Attacker, CardData.TYPE.Q, Attacker, Defender ) );
+        stateManager.TryAction ( ( ) => UseSlot ( Attacker, Card.TYPE.Q, Attacker, Defender ) );
         GD.Print ( $"{Attacker.CharName} has STORM: {Attacker.StatusEffects.Has ( STATUS_EFFECT.STORM )}" );
 
 
         GD.Print ( $"Defender LP after effect: {Defender.LP}" );
     }
 
-    private CardData CreateTestCard ( ) {
-        var testCard = new CardData {
-            id = "test_q",
-            name = "Test Q Card",
-            type = CardData.TYPE.Q,
-            description = "Placeholder Q card for testing.",
+    private Card CreateTestCard ( ) {
+        var testCard = new Card {
+            Id = "test_q",
+            Name = "Test Q Card",
+            Type = Card.TYPE.Q,
+            Description = "Placeholder Q card for testing.",
             Effect = ( user, target ) => {
                 target.LP -= 10;
                 user.StatusEffects |= STATUS_EFFECT.STORM;

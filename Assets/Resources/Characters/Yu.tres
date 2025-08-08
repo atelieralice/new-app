@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="CharacterData" load_steps=4 format=3 uid="uid://dbmplao61olyf"]
 
-[ext_resource type="Script" uid="uid://bqglynhxgmuyn" path="res://Assets/Scripts/Cards/CardData.cs" id="1_ewuyh"]
+[ext_resource type="Script" uid="uid://bqglynhxgmuyn" path="res://Assets/Scripts/Cards/Card.cs" id="1_ewuyh"]
 [ext_resource type="Script" uid="uid://dv47kyjkd823w" path="res://Assets/Scripts/Characters/CharacterData.cs" id="2_bdhfv"]
 
 [sub_resource type="CSharpScript" id="CSharpScript_fbp0m"]
