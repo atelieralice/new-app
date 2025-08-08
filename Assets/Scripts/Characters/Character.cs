@@ -32,7 +32,8 @@ namespace meph {
             CLAYMORE,
             POLEARM,
             BOW,
-            MAGIC
+            MAGIC,
+            GUN
         }
 
         [Flags]

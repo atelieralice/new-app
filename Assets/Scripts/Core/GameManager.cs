@@ -28,7 +28,8 @@ public partial class GameManager : Node {
 
     // Runs once when the game starts
     public override void _Ready ( ) {
-        StateManager stateManager = new StateManager ( );
+        var stateManager = new StateManager ( );
+        var factorManager = new FactorManager ( );
         stateManager.OnAttackerTurn += OnAttackerTurnHandler; // += is used to subscribe to events
         stateManager.OnDefenderTurn += OnDefenderTurnHandler;
         stateManager.OnActionLock += OnActionLockHandler;

@@ -6,7 +6,7 @@ namespace meph {
     public delegate void CardEffect ( Character user, Character target );
 
     public partial class Card {
-        public enum TYPE { BW, SW, Q, W, E, P, U }
+        public enum TYPE { NONE, BW, SW, Q, W, E, P, U }
 
         public string Id { get; internal set; }
         public string Name { get; internal set; }

@@ -26,6 +26,7 @@ public partial class Debug : Node {
 
     public override void _Ready ( ) {
         var stateManager = new StateManager ( );
+        var factorManager = new FactorManager ( );
         stateManager.OnAttackerTurn += OnAttackerTurnHandler;
         stateManager.OnDefenderTurn += OnDefenderTurnHandler;
         stateManager.OnActionLock += OnActionLockHandler;
@@ -44,10 +45,8 @@ public partial class Debug : Node {
         stateManager.TryAction ( ( ) => UseSlot ( Attacker, Card.TYPE.Q, Attacker, Defender ) );
         stateManager.NextTurn ( );
         stateManager.TryAction ( ( ) => UseSlot ( Attacker, Card.TYPE.Q, Attacker, Defender ) );
-        GD.Print ( $"{Attacker.CharName} has STORM: {Attacker.StatusEffects.Has ( STATUS_EFFECT.STORM )}" );
-
-
         GD.Print ( $"Defender LP after effect: {Defender.LP}" );
+        GD.Print ( $"{Attacker.CharName} has STORM: {Attacker.StatusEffects.Has ( STATUS_EFFECT.STORM )}" );
     }
 
     private Card CreateTestCard ( ) {
