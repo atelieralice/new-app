@@ -68,7 +68,7 @@ namespace meph {
         public Godot.Collections.Dictionary<CardData.TYPE, CardData> EquippedSlots = new ( );
 
         // Default crit stats could be init by the game manager and different values could added as a modifier here
-        // Emplty until it is decided
+        // Empty until it is decided
 
         // This variable represents Factors (and other status effects) as a bitfield    
         public STATUS_EFFECT StatusEffects { get; internal set; }
@@ -87,8 +87,8 @@ namespace meph {
         }
     }
     // Example:
-    // if (StatusEffects.Has(Character.STATUS_EFFECT.FREEZE)) {
-    // Console.WriteLine("Character is frozen");
+    // user.StatusEffects.Has(Character.STATUS_EFFECT.FREEZE)
+    // We may omit the "Character." in files that have a static using statement for it
 
     public static class CharacterCreator {
         public static Character InitCharacter ( CharacterData data ) {
