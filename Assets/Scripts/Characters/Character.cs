@@ -67,7 +67,7 @@ namespace meph {
         public int Potion { get; internal set; }
 
         // Equiped cards are stored in a dictionary with their type as the key
-        public Dictionary<Card.TYPE, Card> EquippedSlots = new ( );
+        public Dictionary<Card.TYPE, Card> EquippedSlots { get; internal set; } = new ( );
 
         // Default crit stats could be init by the game manager and different values could added as a modifier here
         // Empty until it is decided
