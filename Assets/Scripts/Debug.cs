@@ -2,6 +2,7 @@ using Godot;
 using meph;
 using static meph.CharacterCreator;
 using static meph.CharacterLogic;
+using static meph.Character;
 
 // Basically GameManager.cs but for debugging purposes
 public partial class Debug : Node {
@@ -39,8 +40,8 @@ public partial class Debug : Node {
 
         // Create and equip a test card to attacker
         var testCard = CreateTestCard ( );
-        stateManager.TryAction ( ( ) => EquipCardToSlot ( stateManager, Attacker, testCard ) );
-        stateManager.TryAction ( ( ) => UseSlot ( stateManager, Attacker, CardData.TYPE.Q, Attacker, Defender ) );
+        stateManager.TryAction ( ( ) => EquipCardToSlot ( Attacker, testCard ) );
+        stateManager.TryAction ( ( ) => UseSlot ( Attacker, CardData.TYPE.Q, Attacker, Defender ) );
 
         GD.Print ( $"Defender LP after effect: {Defender.LP}" );
     }

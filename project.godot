@@ -19,10 +19,6 @@ boot_splash/show_image=false
 
 project/assembly_name="new app"
 
-[editor_plugins]
-
-enabled=PackedStringArray("res://addons/anthonyec.camera_preview/plugin.cfg")
-
 [file_customization]
 
 folder_colors={
