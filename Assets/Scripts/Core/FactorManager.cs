@@ -17,12 +17,15 @@ namespace meph {
                 characterFactors[character] = new Dictionary<Character.STATUS_EFFECT, List<FactorInstance>> ( );
         }
 
+        // Helper for overwrite logic
+        private bool OverwritesPreviousInstances ( Character.STATUS_EFFECT effect ) =>
+            effect == Character.STATUS_EFFECT.FREEZE || effect == Character.STATUS_EFFECT.STORM;
+
         // Add a factor to a character
         public void ApplyFactor ( Character character, Character.STATUS_EFFECT effect, int duration, Dictionary<string, int> parameters = null ) {
             RegisterCharacter ( character );
 
-            // Freeze and Storm always overwrite previous instance
-            if ( effect == Character.STATUS_EFFECT.FREEZE || effect == Character.STATUS_EFFECT.STORM ) {
+            if ( OverwritesPreviousInstances ( effect ) ) {
                 characterFactors[character][effect] = new List<FactorInstance> {
                     new FactorInstance {
                         Type = effect,
@@ -34,11 +37,12 @@ namespace meph {
                 return;
             }
 
-            // Factor stacking
-            if ( !characterFactors[character].ContainsKey ( effect ) )
-                characterFactors[character][effect] = new List<FactorInstance> ( );
+            if ( !characterFactors[character].TryGetValue ( effect, out var list ) ) {
+                list = new List<FactorInstance> ( );
+                characterFactors[character][effect] = list;
+            }
 
-            characterFactors[character][effect].Add ( new FactorInstance {
+            list.Add ( new FactorInstance {
                 Type = effect,
                 Duration = duration,
                 Params = parameters ?? new Dictionary<string, int> ( )
@@ -48,13 +52,13 @@ namespace meph {
 
         // Remove a specific instance of a factor
         public void RemoveFactorInstance ( Character character, Character.STATUS_EFFECT effect, int index ) {
-            if ( characterFactors.ContainsKey ( character ) && characterFactors[character].ContainsKey ( effect ) ) {
-                var list = characterFactors[character][effect];
+            if ( characterFactors.TryGetValue ( character, out var effects ) &&
+                effects.TryGetValue ( effect, out var list ) ) {
                 if ( index >= 0 && index < list.Count ) {
                     list.RemoveAt ( index );
                     // Remove status effect if no instances left
                     if ( list.Count == 0 ) {
-                        characterFactors[character].Remove ( effect );
+                        effects.Remove ( effect );
                         character.StatusEffects &= ~effect;
                     }
                 }
@@ -62,17 +66,19 @@ namespace meph {
         }
 
         // Remove all instances of a factor
-        public void RemoveAllFactor ( Character character, Character.STATUS_EFFECT effect ) {
-            if ( characterFactors.ContainsKey ( character ) && characterFactors[character].ContainsKey ( effect ) ) {
-                characterFactors[character].Remove ( effect );
+        public void RemoveAllFactors ( Character character, Character.STATUS_EFFECT effect ) {
+            if ( characterFactors.TryGetValue ( character, out var effects ) &&
+                effects.ContainsKey ( effect ) ) {
+                effects.Remove ( effect );
                 character.StatusEffects &= ~effect;
             }
         }
 
         // Get all instances of a factor
         public List<FactorInstance> GetFactors ( Character character, Character.STATUS_EFFECT effect ) {
-            if ( characterFactors.ContainsKey ( character ) && characterFactors[character].ContainsKey ( effect ) )
-                return characterFactors[character][effect];
+            if ( characterFactors.TryGetValue ( character, out var effects ) &&
+                effects.TryGetValue ( effect, out var list ) )
+                return list;
             return new List<FactorInstance> ( );
         }
 
@@ -84,10 +90,11 @@ namespace meph {
 
         // Update all factors at end of turn
         public void UpdateFactors ( ) {
+            var toRemove = new List<(Character.STATUS_EFFECT, int)> ( );
             foreach ( var kvp in characterFactors ) {
                 var character = kvp.Key;
                 var factors = kvp.Value;
-                var toRemove = new List<(Character.STATUS_EFFECT, int)> ( );
+                toRemove.Clear ( );
 
                 foreach ( var effectKvp in factors ) {
                     var effect = effectKvp.Key;
