@@ -72,7 +72,8 @@ namespace meph {
         // Default crit stats could be init by the game manager and different values could added as a modifier here
         // Empty until it is decided
 
-        // This variable represents Factors (and other status effects) as a bitfield    
+        // This variable represents Factors (and other status effects) as a bitfield 
+        // Do NOT use directly to apply effects, use FactorManager instead   
         public STATUS_EFFECT StatusEffects { get; internal set; }
 
         // |   : Bitwise OR (set flag)              -> statusEffects |= STATUS_EFFECT.BURNING;
