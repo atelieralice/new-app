@@ -7,6 +7,8 @@ using static meph.Character;
 
 // Basically GameManager.cs but for debugging purposes
 public partial class Debug : Node {
+    StateManager stateManager;
+    FactorManager factorManager;
     public Character Attacker { get; private set; }
     public Character Defender { get; private set; }
 
