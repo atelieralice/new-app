@@ -44,29 +44,29 @@ namespace meph {
 
         // Determine how many single-bit flags exist in STATUS_EFFECT (ignores combined flags).
         private static int GetEffectCount ( ) {
-            int maxIndex = 0;
+            int maxIdx = 0;
             foreach ( STATUS_EFFECT e in Enum.GetValues ( typeof ( STATUS_EFFECT ) ) ) {
                 if ( e == STATUS_EFFECT.NONE ) continue;
                 int v = (int)e;
-                // Only consider single-bit flags (v & (v - 1)) == 0
+                // Only consider single-bit flags (v & ( v - 1 ) ) == 0
                 if ( ( v & ( v - 1 ) ) != 0 ) continue;
                 int idx = 0;
                 while ( v > 0 ) { v >>= 1; idx++; }
-                if ( idx > maxIndex ) maxIndex = idx;
+                if ( idx > maxIdx ) maxIdx = idx;
             }
-            return maxIndex;
+            return maxIdx;
         }
 
         // Flag <-> index mapping helpers to address the correct list in the per-character array.
         private static int EffectToIndex ( STATUS_EFFECT effect ) {
             if ( effect == STATUS_EFFECT.NONE ) return 0;
             int val = (int)effect;
-            int index = 1;
-            while ( val > 1 ) { val >>= 1; index++; }
-            return index;
+            int idx = 1;
+            while ( val > 1 ) { val >>= 1; idx++; }
+            return idx;
         }
-        private static STATUS_EFFECT IndexToEffect ( int index ) =>
-            index == 0 ? STATUS_EFFECT.NONE : (STATUS_EFFECT)( 1 << ( index - 1 ) );
+        private static STATUS_EFFECT IndexToEffect ( int idx ) =>
+            idx == 0 ? STATUS_EFFECT.NONE : (STATUS_EFFECT)( 1 << ( idx - 1 ) );
 
         // These effects are single-instance per character; re-applying replaces and refreshes duration.
         private static bool DoesOverwrite ( STATUS_EFFECT effect ) =>
@@ -115,12 +115,11 @@ namespace meph {
         }
 
         // Remove a single instance (by index) and clear the bit if that was the last.
-        public void RemoveFactorInstance ( Character character, STATUS_EFFECT effect, int index ) {
+        public void RemoveFactorInstance ( Character character, STATUS_EFFECT effect, int idx ) {
             if ( characterFactors.TryGetValue ( character, out var arr ) ) {
-                int idx = EffectToIndex ( effect );
-                var list = arr[idx];
-                if ( index >= 0 && index < list.Count ) {
-                    list.RemoveAt ( index );
+                var list = arr[EffectToIndex ( effect )];
+                if ( idx >= 0 && idx < list.Count ) {
+                    list.RemoveAt ( idx );
                     if ( list.Count == 0 )
                         character.StatusEffects &= ~effect;
                 }
@@ -130,8 +129,7 @@ namespace meph {
         // Remove all instances of an effect and clear the bit.
         public void RemoveAllFactors ( Character character, STATUS_EFFECT effect ) {
             if ( characterFactors.TryGetValue ( character, out var arr ) ) {
-                int idx = EffectToIndex ( effect );
-                arr[idx].Clear ( );
+                arr[EffectToIndex ( effect )].Clear ( );
                 character.StatusEffects &= ~effect;
             }
         }
@@ -154,12 +152,12 @@ namespace meph {
 
         // Decrement timers and prune expired instances. If a list becomes empty,
         // unset the corresponding bit flag on the character.
-        private void UpdateEffectList ( List<FactorInstance> instances, STATUS_EFFECT effect, Character character, int index ) {
+        private static void UpdateEffectList ( List<FactorInstance> instances, STATUS_EFFECT effect, Character character, int idx ) {
             for ( int i = instances.Count - 1; i >= 0; i-- ) {
                 instances[i].Duration--;
                 if ( instances[i].Duration <= 0 ) instances.RemoveAt ( i );
             }
-            if ( instances.Count == 0 && index != 0 )
+            if ( instances.Count == 0 && idx != 0 )
                 character.StatusEffects &= ~effect;
         }
 
@@ -168,9 +166,9 @@ namespace meph {
             foreach ( var kvp in characterFactors ) {
                 var character = kvp.Key;
                 var arr = kvp.Value;
-                for ( int effectIdx = 0; effectIdx < arr.Length; effectIdx++ ) {
-                    var instances = arr[effectIdx];
-                    UpdateEffectList ( instances, IndexToEffect ( effectIdx ), character, effectIdx );
+                for ( int idx = 0; idx < arr.Length; idx++ ) {
+                    var instances = arr[idx];
+                    UpdateEffectList ( instances, IndexToEffect ( idx ), character, idx );
                 }
             }
         }
