@@ -5,7 +5,7 @@ using static meph.CharacterLogic;
 using static meph.Character;
 
 
-// Entry point
+// Main entry point node
 public partial class GameManager : Node {
     public Character Attacker { get; private set; }
     public Character Defender { get; private set; }
@@ -19,6 +19,13 @@ public partial class GameManager : Node {
     public void Reset ( ) {
         Attacker = null;
         Defender = null;
+    }
+
+    public static void ApplyDamage ( FactorManager factorManager, Character character, int damage ) {
+        if ( damage <= 0 || character == null ) return;
+        int remaining = FactorLogic.ResolveToughness ( factorManager, character, damage );
+        if ( remaining > 0 )
+            character.LP = Mathf.Max ( character.LP - remaining, 0 );
     }
 
     // When an event is invoked these methods will be called

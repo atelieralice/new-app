@@ -4,6 +4,7 @@ using static meph.CharacterCreator;
 using static meph.CharacterLogic;
 using static meph.Character;
 
+
 // Basically GameManager.cs but for debugging purposes
 public partial class Debug : Node {
     public Character Attacker { get; private set; }
@@ -18,6 +19,13 @@ public partial class Debug : Node {
     public void Reset ( ) {
         Attacker = null;
         Defender = null;
+    }
+
+    public static void ApplyDamage ( FactorManager factorManager, Character character, int damage ) {
+        if ( damage <= 0 || character == null ) return;
+        int remaining = FactorLogic.ResolveToughness ( factorManager, character, damage );
+        if ( remaining > 0 )
+            character.LP = Mathf.Max ( character.LP - remaining, 0 );
     }
 
     private void OnAttackerTurnHandler ( ) { }

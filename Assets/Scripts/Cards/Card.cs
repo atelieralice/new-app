@@ -14,9 +14,23 @@ namespace meph {
         public string Description { get; internal set; }
 
         public Dictionary<string, int> Requirements { get; internal set; } = new ( );
+
         public bool IsSwift { get; internal set; }
+        public bool IsFrozen { get; private set; }
+        public int FreezeDuration { get; private set; }
 
         // Assigned in code
         public CardEffect Effect;
+
+        public void Freeze ( int duration ) {
+            if ( duration <= 0 ) { Unfreeze ( ); return; }
+            IsFrozen = true;
+            FreezeDuration = duration;
+        }
+
+        public void Unfreeze ( ) {
+            IsFrozen = false;
+            FreezeDuration = 0;
+        }
     }
 }
