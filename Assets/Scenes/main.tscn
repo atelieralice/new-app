@@ -4,3 +4,22 @@
 
 [node name="Root" type="Node"]
 script = ExtResource("1_l26l0")
+
+[node name="UI" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 3
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="ConsoleLog" type="RichTextLabel" parent="UI"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 826.0
+offset_right = 1152.0
+offset_bottom = 192.0
+theme_override_font_sizes/normal_font_size = 12
+theme_override_font_sizes/bold_font_size = 12
+theme_override_font_sizes/bold_italics_font_size = 12
+theme_override_font_sizes/italics_font_size = 12
+theme_override_font_sizes/mono_font_size = 12
+text = "placeholder"
