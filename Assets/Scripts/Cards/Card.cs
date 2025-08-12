@@ -27,7 +27,7 @@ namespace meph {
         public string Name { get; internal set; }
         public TYPE Type { get; internal set; }
         public string Description { get; internal set; }
-        public Dictionary<string, int> Requirements { get; internal set; } = new();
+        public Dictionary<string, int> Requirements { get; internal set; } = new ( );
         public bool IsSwift { get; internal set; }
         public CardEffect Effect { get; internal set; }
 
@@ -35,26 +35,26 @@ namespace meph {
         public bool IsFrozen { get; private set; }
         public int FreezeDuration { get; private set; }
 
-        public void Freeze(int duration) {
+        public void Freeze ( int duration ) {
             IsFrozen = true;
             FreezeDuration = duration;
         }
 
-        public void Unfreeze() {
+        public void Unfreeze ( ) {
             IsFrozen = false;
             FreezeDuration = 0;
         }
 
-        public void UpdateFreeze() {
-            if (IsFrozen) {
+        public void UpdateFreeze ( ) {
+            if ( IsFrozen ) {
                 FreezeDuration--;
-                if (FreezeDuration <= 0) {
-                    Unfreeze();
-                    GameEvents.TriggerCardUnfrozen(this);
+                if ( FreezeDuration <= 0 ) {
+                    Unfreeze ( );
+                    GameEvents.TriggerCardUnfrozen ( this );
                 }
             }
         }
 
-        public override string ToString() => Name ?? "Unknown Card";
+        public override string ToString ( ) => Name ?? "Unknown Card";
     }
 }

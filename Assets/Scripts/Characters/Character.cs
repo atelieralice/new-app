@@ -67,7 +67,7 @@ namespace meph {
         public int Potion { get; internal set; }
 
         // Equipment slots
-        public Dictionary<Card.TYPE, Card> EquippedSlots { get; internal set; } = new();
+        public Dictionary<Card.TYPE, Card> EquippedSlots { get; internal set; } = new ( );
 
         // This variable represents Factors (and other status effects) as a bitfield 
         // Do NOT use directly to apply effects, use FactorManager instead   
@@ -78,22 +78,22 @@ namespace meph {
         public float CritDamage { get; internal set; } = 0.05f; // 5% absolute
 
         // Method to check if an attack crits using Godot's RNG
-        public bool RollCritical() {
-            return Godot.GD.Randf() < CritRate;
+        public bool RollCritical ( ) {
+            return Godot.GD.Randf ( ) < CritRate;
         }
 
         // |   : Bitwise OR (set flag)              -> statusEffects |= STATUS_EFFECT.BURNING;
         // &= ~: Bitwise AND with NOT (remove flag) -> statusEffects &= ~STATUS_EFFECT.BURNING;
         // &   : Bitwise AND (check flag)           -> (statusEffects & STATUS_EFFECT.BURNING) != 0
 
-        public override string ToString() => CharName ?? "Unknown Character";
+        public override string ToString ( ) => CharName ?? "Unknown Character";
     }
 
     // Helper method to check if a specific status effect is present (use on statusEffects)
     // It ANDs the statusEffects with a specific effect to know if that specific effect is set
     public static class StatusEffectResolver {
-        public static bool Has(this Character.STATUS_EFFECT effects, Character.STATUS_EFFECT effect) {
-            return (effects & effect) != 0;
+        public static bool Has ( this Character.STATUS_EFFECT effects, Character.STATUS_EFFECT effect ) {
+            return ( effects & effect ) != 0;
         }
     }
     // Example:
@@ -101,8 +101,8 @@ namespace meph {
     // We may omit the "Character." in files that have a static using statement for it
 
     public static class CharacterCreator {
-        public static Character InitCharacter(CharacterData data) {
-            var character = new Character();
+        public static Character InitCharacter ( CharacterData data ) {
+            var character = new Character ( );
             character.CharName = data.charName;
             character.Star = data.star;
             character.EssenceType = data.essenceType;

@@ -5,24 +5,27 @@ using static meph.Character;
 namespace meph {
     public static class FactorLogic {
 
-        private static int GetParamOrDefault(FactorInstance factor, string key, int defVal = 0) =>
-            factor.Params != null && factor.Params.TryGetValue(key, out var v) ? v : defVal;
+        private static int GetParamOrDefault ( FactorInstance factor, string key, int defVal = 0 ) =>
+            factor.Params != null && factor.Params.TryGetValue ( key, out var v ) ? v : defVal;
 
-        private static bool IsStormed(FactorManager fm, Character target) =>
-            fm.GetFactors(target, STATUS_EFFECT.STORM).Count > 0;
+        private static bool IsStormed ( FactorManager fm, Character target ) =>
+            fm.GetFactors ( target, STATUS_EFFECT.STORM ).Count > 0;
 
-        public static void AddToughness(FactorManager fm, Character character, int duration = 2, int dp = 100) {
-            if (IsStormed(fm, character)) {
-                GameEvents.TriggerFactorBlocked(character, STATUS_EFFECT.TOUGHNESS);
+        // Enhanced Toughness according to design document: +150 Earth Damage and shield
+        public static void AddToughness ( FactorManager fm, Character character, int duration = 2, int dp = 100 ) {
+            if ( IsStormed ( fm, character ) ) {
+                GameEvents.TriggerFactorBlocked ( character, STATUS_EFFECT.TOUGHNESS );
                 return;
             }
             var parameters = new Dictionary<string, int> { { ParamKeys.DP, dp } };
-            fm.ApplyFactor(character, STATUS_EFFECT.TOUGHNESS, duration, parameters );
+            fm.ApplyFactor ( character, STATUS_EFFECT.TOUGHNESS, duration, parameters );
+
+            ConsoleLog.Factor ( $"{character.CharName} gained Toughness: +150 Earth Damage and {dp} DP shield for {duration} turns" );
         }
 
-        public static void AddHealing(FactorManager fm, Character character, int duration = 2, int ha = 100 ) {
+        public static void AddHealing ( FactorManager fm, Character character, int duration = 2, int ha = 100 ) {
             if ( IsStormed ( fm, character ) ) {
-                GameEvents.TriggerFactorBlocked(character, STATUS_EFFECT.HEALING);
+                GameEvents.TriggerFactorBlocked ( character, STATUS_EFFECT.HEALING );
                 return;
             }
             var parameters = new Dictionary<string, int> { { ParamKeys.HA, ha } };
@@ -31,7 +34,7 @@ namespace meph {
 
         public static void AddRecharge ( FactorManager fm, Character character, int duration = 2, int recharge = 150 ) {
             if ( IsStormed ( fm, character ) ) {
-                GameEvents.TriggerFactorBlocked(character, STATUS_EFFECT.RECHARGE);
+                GameEvents.TriggerFactorBlocked ( character, STATUS_EFFECT.RECHARGE );
                 return;
             }
             var parameters = new Dictionary<string, int> { { ParamKeys.RC, recharge } };
@@ -40,21 +43,25 @@ namespace meph {
 
         public static void AddGrowth ( FactorManager fm, Character character, int duration = 2, int growthMp = 100 ) {
             if ( IsStormed ( fm, character ) ) {
-                GameEvents.TriggerFactorBlocked(character, STATUS_EFFECT.GROWTH);
+                GameEvents.TriggerFactorBlocked ( character, STATUS_EFFECT.GROWTH );
                 return;
             }
             var parameters = new Dictionary<string, int> { { ParamKeys.MP, growthMp } };
             fm.ApplyFactor ( character, STATUS_EFFECT.GROWTH, duration, parameters );
         }
 
+        // Enhanced Storm according to design document: prevents opponent from activating factors
         public static void AddStorm ( FactorManager fm, Character character, int duration = 2, int stormDamage = 50 ) {
             var parameters = new Dictionary<string, int> { { ParamKeys.SD, stormDamage } };
             fm.ApplyFactor ( character, STATUS_EFFECT.STORM, duration, parameters );
+
+            ConsoleLog.Factor ( $"{character.CharName} is affected by Storm - cannot activate factors and takes {stormDamage} damage per turn for {duration} turns" );
         }
 
+        // Enhanced Burning according to design document: percentage-based damage
         public static void AddBurning ( FactorManager fm, Character character, int duration = 2, int bdPercent = 2 ) {
             if ( IsStormed ( fm, character ) ) {
-                GameEvents.TriggerFactorBlocked(character, STATUS_EFFECT.BURNING);
+                GameEvents.TriggerFactorBlocked ( character, STATUS_EFFECT.BURNING );
                 return;
             }
             var parameters = new Dictionary<string, int> { { ParamKeys.BD, bdPercent } };
@@ -68,11 +75,11 @@ namespace meph {
 
         public static void FreezeCard ( Card card, int duration ) {
             card.Freeze ( duration );
-            GameEvents.TriggerCardFrozen(card, duration);
+            GameEvents.TriggerCardFrozen ( card, duration );
         }
         public static void UnfreezeCard ( Card card ) {
             card.Unfreeze ( );
-            GameEvents.TriggerCardUnfrozen(card);
+            GameEvents.TriggerCardUnfrozen ( card );
         }
 
         public static int ResolveToughness ( FactorManager fm, Character character, int damage ) {
@@ -89,14 +96,17 @@ namespace meph {
 
             if ( damage >= totalDP ) {
                 int remaining = damage - totalDP;
+                // Shield breaks - remove all toughness instances
                 for ( int i = 0; i < shields.Count; i++ ) {
                     shields[i].Duration = 0;
                     if ( shields[i].Params != null && shields[i].Params.ContainsKey ( ParamKeys.DP ) )
                         shields[i].Params[ParamKeys.DP] = 0;
                 }
+                ConsoleLog.Combat ( $"{character.CharName}'s shield absorbed {totalDP} damage and broke" );
                 return remaining;
             }
 
+            // Shield absorbs all damage
             int toConsume = damage;
             for ( int i = 0; i < shields.Count && toConsume > 0; i++ ) {
                 var s = shields[i];
@@ -112,27 +122,40 @@ namespace meph {
                     toConsume = 0;
                 }
             }
+            ConsoleLog.Combat ( $"{character.CharName}'s shield absorbed {damage} damage" );
             return 0;
         }
 
         public static int GetToughnessEarthBonus ( FactorManager fm, Character character ) =>
             fm.GetFactors ( character, STATUS_EFFECT.TOUGHNESS ).Count > 0 ? 150 : 0;
 
-        // Healing: healer gains HA (capped), target loses HA/2 (not damage; bypasses shields).
+        // Enhanced Healing resolution according to design document
         public static void ResolveHealing ( FactorManager fm, Character character, Character target ) {
             var heals = fm.GetFactors ( character, STATUS_EFFECT.HEALING );
             for ( int i = 0; i < heals.Count; i++ ) {
                 int ha = GetParamOrDefault ( heals[i], ParamKeys.HA, 100 );
+
+                // Character heals (capped at max)
                 int oldLP = character.LP;
                 character.LP = Math.Min ( character.LP + ha, character.MaxLP );
                 int actualHealing = character.LP - oldLP;
 
-                if (actualHealing > 0) {
-                    GameEvents.TriggerHealingReceived(character, actualHealing);
+                if ( actualHealing > 0 ) {
+                    GameEvents.TriggerHealingReceived ( character, actualHealing );
                 }
 
-                if ( target != null )
-                    target.LP = Math.Max ( target.LP - ( ha / 2 ), 0 );
+                // Opponent loses LP (half the heal amount) - this is NOT damage according to design
+                if ( target != null ) {
+                    int lpLoss = ha / 2;
+                    target.LP = Math.Max ( target.LP - lpLoss, 0 );
+                    GameEvents.TriggerResourceLost ( target, lpLoss, "LP" );
+                    ConsoleLog.Combat ( $"{target.CharName} lost {lpLoss} LP from {character.CharName}'s healing (not damage)" );
+
+                    // Check for defeat from LP loss
+                    if ( target.LP <= 0 ) {
+                        GameEvents.TriggerPlayerDefeated ( target );
+                    }
+                }
             }
         }
 
@@ -144,8 +167,8 @@ namespace meph {
                 character.EP = Math.Min ( character.EP + steal, character.MaxEP );
                 target.EP -= steal;
 
-                if (steal > 0) {
-                    GameEvents.TriggerResourceStolen(target, character, steal, "EP");
+                if ( steal > 0 ) {
+                    GameEvents.TriggerResourceStolen ( target, character, steal, "EP" );
                 }
             }
         }
@@ -158,8 +181,8 @@ namespace meph {
                 character.MP = Math.Min ( character.MP + steal, character.MaxMP );
                 target.MP -= steal;
 
-                if (steal > 0) {
-                    GameEvents.TriggerResourceStolen(target, character, steal, "MP");
+                if ( steal > 0 ) {
+                    GameEvents.TriggerResourceStolen ( target, character, steal, "MP" );
                 }
             }
         }
@@ -172,10 +195,13 @@ namespace meph {
             for ( int i = 0; i < storms.Count; i++ )
                 totalDmg += GetParamOrDefault ( storms[i], ParamKeys.SD, 50 );
 
-            if ( totalDmg > 0 )
+            if ( totalDmg > 0 ) {
+                ConsoleLog.Combat ( $"{target.CharName} takes {totalDmg} Storm damage" );
                 GameManager.ApplyDamage ( fm, target, totalDmg );
+            }
         }
 
+        // Enhanced Burning resolution according to design document
         public static void ResolveBurning ( FactorManager fm, Character target ) {
             var burns = fm.GetFactors ( target, STATUS_EFFECT.BURNING );
             if ( burns.Count == 0 ) return;
@@ -186,7 +212,10 @@ namespace meph {
 
             if ( totalPercent <= 0 ) return;
 
-            int dmg = target.MaxLP * totalPercent / 100;
+            // Burning damage is percentage of Max LP according to design document
+            int dmg = (int)( target.MaxLP * totalPercent / 100f );
+
+            ConsoleLog.Combat ( $"{target.CharName} takes {dmg} burning damage ({totalPercent}% of Max LP)" );
             GameManager.ApplyDamage ( fm, target, dmg );
         }
     }
