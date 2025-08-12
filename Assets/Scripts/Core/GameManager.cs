@@ -163,6 +163,7 @@ public partial class GameManager : Node {
         }
         FactorLogic.ResolveBurning ( FactorManager, current );
         FactorLogic.ResolveStorm ( FactorManager, current );
+        FactorLogic.ResolveMpRegeneration ( FactorManager, current );
 
         // Age factors
         FactorManager.UpdateFactors ( );

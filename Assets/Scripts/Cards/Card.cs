@@ -55,6 +55,12 @@ namespace meph {
             }
         }
 
+        public void ExtendFreezeDuration(int additionalTurns) {
+            if (IsFrozen) {
+                FreezeDuration += additionalTurns;
+            }
+        }
+
         public override string ToString ( ) => Name ?? "Unknown Card";
     }
 }

@@ -65,12 +65,30 @@ namespace meph {
 
             var stateManager = GameManager.Instance?.StateManager;
             stateManager?.TryAction ( ( ) => {
-                // Check for critical hit
-                bool isCrit = attacker.RollCritical ( );
-
                 // Execute both weapon effects
                 baseWeapon?.Effect?.Invoke ( attacker, target );
                 secondaryWeapon?.Effect?.Invoke ( attacker, target );
+
+                // Apply MP recovery from charms (Yu's Guilt of Betrayal)
+                int mpRecovery = attacker.GetMpRecoveryBonus ( );
+                if ( mpRecovery > 0 ) {
+                    CharacterLogic.GainResource ( attacker, "MP", mpRecovery );
+                    ConsoleLog.Resource ( $"{attacker.CharName} recovered {mpRecovery} MP from normal attack" );
+                }
+
+                // Handle Blazing Dash attack counting
+                if ( attacker.PassiveState.IsBlazingDashActive ) {
+                    attacker.PassiveState.BlazingDashAttacksRemaining--;
+                    if ( attacker.PassiveState.BlazingDashAttacksRemaining <= 0 ) {
+                        attacker.PassiveState.IsBlazingDashActive = false;
+                        // Remove immunity
+                        var fm = GameManager.Instance?.FactorManager;
+                        if ( fm != null ) {
+                            fm.RemoveAllFactors ( attacker, Character.STATUS_EFFECT.IMMUNE );
+                        }
+                        ConsoleLog.Combat ( $"{attacker.CharName}'s Blazing Dash expired" );
+                    }
+                }
 
                 GameEvents.TriggerNormalAttack ( attacker, Card.TYPE.BW );
                 // Removed duplicate logging since GameManager handles it via events

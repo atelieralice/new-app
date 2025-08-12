@@ -41,6 +41,15 @@ namespace meph {
         public static event Action<Character, int, string> OnResourceLost; // (character, amount, type)
         public static event Action<Character, int, int> OnResourceRegenerated; // (character, ep, mp)
 
+        // Charm Events
+        public static event Action<Character, Charm> OnCharmEquipped;
+        public static event Action<Character, Charm> OnCharmUnequipped;
+        public static event Action<Character, string> OnSetBonusActivated;
+        
+        // Character Passive Events
+        public static event Action<Character> OnPassiveTriggered;
+        public static event Action<Character, string> OnPassiveStateChanged;
+
         // Trigger methods with better names
         public static void TriggerDamageDealt ( Character target, int damage, int remainingLP )
             => OnDamageDealt?.Invoke ( target, damage, remainingLP );
@@ -114,5 +123,21 @@ namespace meph {
         // Fixed: Add missing trigger method
         public static void TriggerPlayerDefeated ( Character character )
             => OnPlayerDefeated?.Invoke ( character );
+
+        // New trigger methods for charms
+        public static void TriggerCharmEquipped(Character character, Charm charm)
+            => OnCharmEquipped?.Invoke(character, charm);
+
+        public static void TriggerCharmUnequipped(Character character, Charm charm)
+            => OnCharmUnequipped?.Invoke(character, charm);
+
+        public static void TriggerSetBonusActivated(Character character, string setName)
+            => OnSetBonusActivated?.Invoke(character, setName);
+
+        public static void TriggerPassiveTriggered(Character character)
+            => OnPassiveTriggered?.Invoke(character);
+
+        public static void TriggerPassiveStateChanged(Character character, string stateName)
+            => OnPassiveStateChanged?.Invoke(character, stateName);
     }
 }
