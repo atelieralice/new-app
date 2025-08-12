@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 
-
 // We could implement an interface like ITargetableEntity for future characters' skills (wink wink!). Just a reminder
 // For now I'll just go along with what I wrote, doing stuff will be faster than thinking a very complex system for that
 namespace meph {
@@ -45,7 +44,7 @@ namespace meph {
             GROWTH = 8,
             STORM = 16,
             BURNING = 32,
-            FREEZE = 64,
+            FREEZE = 64,      // Only for cards, not characters
             IMMUNE = 128
         }
 
@@ -60,33 +59,41 @@ namespace meph {
         public int MaxUP { get; internal set; }
         public int MaxPotion { get; internal set; }
 
+        // Simple properties without unnecessary event firing
         public int LP { get; internal set; }
         public int EP { get; internal set; }
         public int MP { get; internal set; }
         public int UP { get; internal set; }
         public int Potion { get; internal set; }
 
-        // Equiped cards are stored in a dictionary with their type as the key
-        public Dictionary<Card.TYPE, Card> EquippedSlots { get; internal set; } = new ( );
-
-        // Default crit stats could be init by the game manager and different values could added as a modifier here
-        // Empty until it is decided
+        // Equipment slots
+        public Dictionary<Card.TYPE, Card> EquippedSlots { get; internal set; } = new();
 
         // This variable represents Factors (and other status effects) as a bitfield 
         // Do NOT use directly to apply effects, use FactorManager instead   
         public STATUS_EFFECT StatusEffects { get; internal set; }
 
+        // Critical hit stats (default values)
+        public float CritRate { get; internal set; } = 0.1f; // 10%
+        public float CritDamage { get; internal set; } = 0.05f; // 5% absolute
+
+        // Method to check if an attack crits using Godot's RNG
+        public bool RollCritical() {
+            return Godot.GD.Randf() < CritRate;
+        }
+
         // |   : Bitwise OR (set flag)              -> statusEffects |= STATUS_EFFECT.BURNING;
         // &= ~: Bitwise AND with NOT (remove flag) -> statusEffects &= ~STATUS_EFFECT.BURNING;
         // &   : Bitwise AND (check flag)           -> (statusEffects & STATUS_EFFECT.BURNING) != 0
 
+        public override string ToString() => CharName ?? "Unknown Character";
     }
 
     // Helper method to check if a specific status effect is present (use on statusEffects)
     // It ANDs the statusEffects with a specific effect to know if that specific effect is set
     public static class StatusEffectResolver {
-        public static bool Has ( this Character.STATUS_EFFECT effects, Character.STATUS_EFFECT effect ) {
-            return ( effects & effect ) != 0;
+        public static bool Has(this Character.STATUS_EFFECT effects, Character.STATUS_EFFECT effect) {
+            return (effects & effect) != 0;
         }
     }
     // Example:
@@ -94,16 +101,21 @@ namespace meph {
     // We may omit the "Character." in files that have a static using statement for it
 
     public static class CharacterCreator {
-        public static Character InitCharacter ( CharacterData data ) {
-            var character = new Character ( );
+        public static Character InitCharacter(CharacterData data) {
+            var character = new Character();
             character.CharName = data.charName;
             character.Star = data.star;
             character.EssenceType = data.essenceType;
             character.WeaponType = data.weaponType;
+            character.MaxLP = data.maxLP;
+            character.MaxEP = data.maxEP;
+            character.MaxMP = data.maxMP;
+            character.MaxUP = data.maxUP;
+            character.MaxPotion = data.maxPotion;
             character.LP = data.maxLP;
             character.EP = data.maxEP;
             character.MP = data.maxMP;
-            character.UP = data.maxUP;
+            character.UP = 0; // Start with empty UP
             character.Potion = data.maxPotion;
             return character;
         }

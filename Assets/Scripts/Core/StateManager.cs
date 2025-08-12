@@ -1,10 +1,8 @@
 using System;
 using Godot;
 
-
 // This file handles the game state
 namespace meph {
-
     public enum TURN {
         ATTACKER = 0,
         DEFENDER = 1
@@ -12,47 +10,90 @@ namespace meph {
 
     public class StateManager {
         public TURN CurrentTurn { get; private set; } = TURN.ATTACKER;
-
-        // We use events so any future component we add will easily react to state changes
-        // These events are handled in GameManager.cs
-        public event Action OnAttackerTurn;
-        public event Action OnDefenderTurn;
-        public event Action OnActionLock;
-
         public bool ActionsLocked { get; private set; } = false;
+        public int ActionsRemaining { get; private set; } = 1;
 
+        // Enhanced events with character context
+        public event Action<TURN, Character> OnTurnStarted;
+        public event Action<TURN, Character> OnTurnEnded;
+        public event Action OnActionLock;
+        public event Action<int> OnActionsChanged;
 
-        // We invoke an event whenever a side gets the turn
-        public void NextTurn ( ) {
-            ActionsLocked = false; // Clear lock at the start of each turn
+        // Reference to get current players
+        public Func<TURN, Character> GetPlayer { get; set; }
+
+        public void NextTurn() {
+            var currentPlayer = GetPlayer?.Invoke(CurrentTurn);
+            OnTurnEnded?.Invoke(CurrentTurn, currentPlayer);
+            
+            ActionsLocked = false;
+            ActionsRemaining = 1; // Reset actions for new turn
             CurrentTurn = CurrentTurn == TURN.ATTACKER ? TURN.DEFENDER : TURN.ATTACKER;
-            if ( CurrentTurn == TURN.ATTACKER ) {
-                OnAttackerTurn?.Invoke ( );
-                GD.Print ( "Attacker's turn." );
-            } else {
-                OnDefenderTurn?.Invoke ( );
-                GD.Print ( "Defender's turn." );
+            
+            var newPlayer = GetPlayer?.Invoke(CurrentTurn);
+            
+            // Apply turn-based regeneration
+            if (newPlayer != null) {
+                RegenerateResources(newPlayer);
+            }
+            
+            OnTurnStarted?.Invoke(CurrentTurn, newPlayer);
+            OnActionsChanged?.Invoke(ActionsRemaining);
+            GameEvents.TriggerTurnChanged(CurrentTurn, newPlayer);
+            
+            ConsoleLog.Game($"{newPlayer?.CharName ?? CurrentTurn.ToString()}'s turn started.");
+        }
+
+        private void RegenerateResources(Character character) {
+            int epRegen = (int)(character.MaxEP * 0.05f);
+            int mpRegen = (int)(character.MaxMP * 0.02f);
+            
+            int oldEP = character.EP;
+            int oldMP = character.MP;
+            
+            character.EP = Math.Min(character.EP + epRegen, character.MaxEP);
+            character.MP = Math.Min(character.MP + mpRegen, character.MaxMP);
+            
+            // Trigger individual resource gained events
+            if (character.EP > oldEP) {
+                GameEvents.TriggerResourceGained(character, character.EP - oldEP, "EP");
+            }
+            if (character.MP > oldMP) {
+                GameEvents.TriggerResourceGained(character, character.MP - oldMP, "MP");
+            }
+            
+            // Also trigger the combined regeneration event
+            GameEvents.TriggerResourceRegenerated(character, character.EP - oldEP, character.MP - oldMP);
+        }
+
+        public void TryAction(Action action, bool isSwift = false) {
+            if (!CanAct() && !isSwift) {
+                ConsoleLog.Warn("Cannot act, no actions remaining.");
+                return;
+            }
+
+            action();
+            
+            if (!isSwift) {
+                ActionsRemaining--;
+                OnActionsChanged?.Invoke(ActionsRemaining);
+                
+                if (ActionsRemaining <= 0) {
+                    LockAction();
+                }
             }
         }
 
-        // Helper method to invoke the event from outside this class
-        public void LockAction ( ) {
-            ActionsLocked = true; // Lock actions for the rest of the turn
-            OnActionLock?.Invoke ( );
+        public bool CanAct() => !ActionsLocked && ActionsRemaining > 0;
+        
+        public void LockAction() {
+            ActionsLocked = true;
+            OnActionLock?.Invoke();
         }
 
-        public bool CanAct ( ) => !ActionsLocked; // For convenience
-
-        // "Action" keyword is a built-in delegate type, which basically lets us to not 
-        // worry about defining a custom delegate. Delegates take functions as parameters
-        // Here we encapsulate the game's action logic in this method and ensure actions are only performed when allowed.
-        public void TryAction ( Action action ) {
-            if ( CanAct ( ) ) {
-                action ( );
-                LockAction ( );
-            } else {
-                GD.Print ( "Cannot act, actions are locked." );
-            }
+        public void EndTurn() {
+            // Manual turn end - useful for when player wants to end early
+            NextTurn();
         }
     }
 }

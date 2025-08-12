@@ -5,32 +5,44 @@ using static meph.Character;
 namespace meph {
     public static class FactorLogic {
 
-        private static int GetParamOrDefault ( FactorInstance factor, string key, int defVal = 0 ) =>
-            factor.Params != null && factor.Params.TryGetValue ( key, out var v ) ? v : defVal;
+        private static int GetParamOrDefault(FactorInstance factor, string key, int defVal = 0) =>
+            factor.Params != null && factor.Params.TryGetValue(key, out var v) ? v : defVal;
 
-        private static bool IsStormed ( FactorManager fm, Character target ) =>
-            fm.GetFactors ( target, STATUS_EFFECT.STORM ).Count > 0;
+        private static bool IsStormed(FactorManager fm, Character target) =>
+            fm.GetFactors(target, STATUS_EFFECT.STORM).Count > 0;
 
-        public static void AddToughness ( FactorManager fm, Character character, int duration = 2, int dp = 100 ) {
-            if ( IsStormed ( fm, character ) ) return;
+        public static void AddToughness(FactorManager fm, Character character, int duration = 2, int dp = 100) {
+            if (IsStormed(fm, character)) {
+                GameEvents.TriggerFactorBlocked(character, STATUS_EFFECT.TOUGHNESS);
+                return;
+            }
             var parameters = new Dictionary<string, int> { { ParamKeys.DP, dp } };
-            fm.ApplyFactor ( character, STATUS_EFFECT.TOUGHNESS, duration, parameters );
+            fm.ApplyFactor(character, STATUS_EFFECT.TOUGHNESS, duration, parameters );
         }
 
-        public static void AddHealing ( FactorManager fm, Character character, int duration = 2, int ha = 100 ) {
-            if ( IsStormed ( fm, character ) ) return;
+        public static void AddHealing(FactorManager fm, Character character, int duration = 2, int ha = 100 ) {
+            if ( IsStormed ( fm, character ) ) {
+                GameEvents.TriggerFactorBlocked(character, STATUS_EFFECT.HEALING);
+                return;
+            }
             var parameters = new Dictionary<string, int> { { ParamKeys.HA, ha } };
             fm.ApplyFactor ( character, STATUS_EFFECT.HEALING, duration, parameters );
         }
 
         public static void AddRecharge ( FactorManager fm, Character character, int duration = 2, int recharge = 150 ) {
-            if ( IsStormed ( fm, character ) ) return;
+            if ( IsStormed ( fm, character ) ) {
+                GameEvents.TriggerFactorBlocked(character, STATUS_EFFECT.RECHARGE);
+                return;
+            }
             var parameters = new Dictionary<string, int> { { ParamKeys.RC, recharge } };
             fm.ApplyFactor ( character, STATUS_EFFECT.RECHARGE, duration, parameters );
         }
 
         public static void AddGrowth ( FactorManager fm, Character character, int duration = 2, int growthMp = 100 ) {
-            if ( IsStormed ( fm, character ) ) return;
+            if ( IsStormed ( fm, character ) ) {
+                GameEvents.TriggerFactorBlocked(character, STATUS_EFFECT.GROWTH);
+                return;
+            }
             var parameters = new Dictionary<string, int> { { ParamKeys.MP, growthMp } };
             fm.ApplyFactor ( character, STATUS_EFFECT.GROWTH, duration, parameters );
         }
@@ -41,7 +53,10 @@ namespace meph {
         }
 
         public static void AddBurning ( FactorManager fm, Character character, int duration = 2, int bdPercent = 2 ) {
-            if ( IsStormed ( fm, character ) ) return;
+            if ( IsStormed ( fm, character ) ) {
+                GameEvents.TriggerFactorBlocked(character, STATUS_EFFECT.BURNING);
+                return;
+            }
             var parameters = new Dictionary<string, int> { { ParamKeys.BD, bdPercent } };
             fm.ApplyFactor ( character, STATUS_EFFECT.BURNING, duration, parameters );
         }
@@ -51,8 +66,14 @@ namespace meph {
             fm.ApplyFactor ( character, STATUS_EFFECT.FREEZE, duration, parameters );
         }
 
-        public static void FreezeCard ( Card card, int duration ) => card.Freeze ( duration );
-        public static void UnfreezeCard ( Card card ) => card.Unfreeze ( );
+        public static void FreezeCard ( Card card, int duration ) {
+            card.Freeze ( duration );
+            GameEvents.TriggerCardFrozen(card, duration);
+        }
+        public static void UnfreezeCard ( Card card ) {
+            card.Unfreeze ( );
+            GameEvents.TriggerCardUnfrozen(card);
+        }
 
         public static int ResolveToughness ( FactorManager fm, Character character, int damage ) {
             if ( damage <= 0 ) return 0;
@@ -102,7 +123,14 @@ namespace meph {
             var heals = fm.GetFactors ( character, STATUS_EFFECT.HEALING );
             for ( int i = 0; i < heals.Count; i++ ) {
                 int ha = GetParamOrDefault ( heals[i], ParamKeys.HA, 100 );
+                int oldLP = character.LP;
                 character.LP = Math.Min ( character.LP + ha, character.MaxLP );
+                int actualHealing = character.LP - oldLP;
+
+                if (actualHealing > 0) {
+                    GameEvents.TriggerHealingReceived(character, actualHealing);
+                }
+
                 if ( target != null )
                     target.LP = Math.Max ( target.LP - ( ha / 2 ), 0 );
             }
@@ -115,6 +143,10 @@ namespace meph {
                 int steal = Math.Min ( amount, target.EP );
                 character.EP = Math.Min ( character.EP + steal, character.MaxEP );
                 target.EP -= steal;
+
+                if (steal > 0) {
+                    GameEvents.TriggerResourceStolen(target, character, steal, "EP");
+                }
             }
         }
 
@@ -125,6 +157,10 @@ namespace meph {
                 int steal = Math.Min ( amount, target.MP );
                 character.MP = Math.Min ( character.MP + steal, character.MaxMP );
                 target.MP -= steal;
+
+                if (steal > 0) {
+                    GameEvents.TriggerResourceStolen(target, character, steal, "MP");
+                }
             }
         }
 
