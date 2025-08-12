@@ -40,13 +40,13 @@ public partial class GameManager : Node {
         if ( current == null ) { factorManager.UpdateFactors ( ); return; }
 
         // Per-turn ticks use current instances
-        FactorLogic.ResolveHealing  ( factorManager, current, other );
+        FactorLogic.ResolveHealing ( factorManager, current, other );
         if ( other != null ) {
-            FactorLogic.ResolveRecharge( factorManager, current, other );
-            FactorLogic.ResolveGrowth  ( factorManager, current, other );
+            FactorLogic.ResolveRecharge ( factorManager, current, other );
+            FactorLogic.ResolveGrowth ( factorManager, current, other );
         }
-        FactorLogic.ResolveBurning   ( factorManager, current ); // tick on current
-        FactorLogic.ResolveStorm     ( factorManager, current ); // tick on current
+        FactorLogic.ResolveBurning ( factorManager, current ); // tick on current
+        FactorLogic.ResolveStorm ( factorManager, current ); // tick on current
 
         // Then decrement durations and remove expired
         factorManager.UpdateFactors ( );
@@ -54,12 +54,27 @@ public partial class GameManager : Node {
 
     // Runs once when the game starts
     public override void _Ready ( ) {
-        stateManager = new StateManager ( );   // assign to fields (no var → no shadowing)
+        stateManager = new StateManager ( );
         factorManager = new FactorManager ( );
+
+        // Init in-game console
+        var console = GetNode<RichTextLabel> ( "%ConsoleLog" );
+        ConsoleLog.Init ( console );
+        ConsoleLog.Info ( "GameManager ready." );
+
+        // Factor lifecycle logs
+        factorManager.OnFactorApplied += ( character, effect, instance ) =>
+            ConsoleLog.Info ( $"Applied {effect} (dur {instance.Duration})." );
+        factorManager.OnFactorRemoved += ( character, effect, instance ) =>
+            ConsoleLog.Info ( $"Removed {effect}." );
+        factorManager.OnStatusCleared += ( character, effect ) =>
+            ConsoleLog.Info ( $"Status cleared: {effect}." );
+        factorManager.OnFactorUpdate += ( ) =>
+            ConsoleLog.Info ( "Factors updated." );
 
         stateManager.OnAttackerTurn += OnAttackerTurnHandler;
         stateManager.OnDefenderTurn += OnDefenderTurnHandler;
-        stateManager.OnActionLock   += OnActionLockHandler;
+        stateManager.OnActionLock += OnActionLockHandler;
     }
 
     public override void _Process ( double delta ) { }

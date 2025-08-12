@@ -5,6 +5,27 @@
 [node name="Root" type="Node"]
 script = ExtResource("1_l26l0")
 
+[node name="BoardRoot" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 3
+anchor_right = 1.0
+anchor_bottom = 1.0
+metadata/_edit_use_anchors_ = true
+metadata/_edit_lock_ = true
+
+[node name="Board" type="ColorRect" parent="BoardRoot"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.22395833
+anchor_top = 0.08950617
+anchor_right = 0.7760417
+anchor_bottom = 0.91049385
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.9905152, 0.53582567, 0, 1)
+metadata/_edit_use_anchors_ = true
+
 [node name="UI" type="Control" parent="."]
 unique_name_in_owner = true
 layout_mode = 3
@@ -14,7 +35,7 @@ offset_bottom = 40.0
 [node name="ConsoleLog" type="RichTextLabel" parent="UI"]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 826.0
+offset_left = 899.0
 offset_right = 1152.0
 offset_bottom = 192.0
 theme_override_font_sizes/normal_font_size = 12

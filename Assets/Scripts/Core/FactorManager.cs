@@ -31,6 +31,12 @@ namespace meph {
     // - Some effects are "overwrite-only" (STORM, FREEZE): only one instance exists; re-applying refreshes it.
     // - Character.StatusEffects is a bitfield mirror for quick checks; do not mutate it directly.
     public class FactorManager {
+        // Lifecycle events (engine-agnostic; safe for Unity)
+        public event Action<Character, STATUS_EFFECT, FactorInstance> OnFactorApplied;
+        public event Action<Character, STATUS_EFFECT, FactorInstance> OnFactorRemoved;
+        public event Action<Character, STATUS_EFFECT> OnStatusCleared;
+        public event Action OnFactorUpdate;
+
         // Number of single-bit flags in STATUS_EFFECT; computed once so we can pre-size arrays.
         private static readonly int EffectCount = GetEffectCount ( );
 
@@ -94,7 +100,7 @@ namespace meph {
         // - Overwrite-only: clears existing instances and inserts a single refreshed one.
         // Also mirrors the bit in Character.StatusEffects.
         public void ApplyFactor ( Character character, STATUS_EFFECT effect, int duration, Dictionary<string, int> parameters = null ) {
-            if ( effect == STATUS_EFFECT.NONE ) return; // ignore no-op
+            if ( effect == STATUS_EFFECT.NONE ) return;
             RegisterCharacter ( character );
             int idx = EffectToIndex ( effect );
             var arr = characterFactors[character];
@@ -112,6 +118,8 @@ namespace meph {
                 arr[idx].Add ( factor );
             }
             character.StatusEffects |= effect;
+
+            OnFactorApplied?.Invoke ( character, effect, factor );
         }
 
         // Remove a single instance (by index) and clear the bit if that was the last.
@@ -119,9 +127,13 @@ namespace meph {
             if ( characterFactors.TryGetValue ( character, out var arr ) ) {
                 var list = arr[EffectToIndex ( effect )];
                 if ( idx >= 0 && idx < list.Count ) {
+                    var removed = list[idx];
                     list.RemoveAt ( idx );
-                    if ( list.Count == 0 )
+                    OnFactorRemoved?.Invoke ( character, effect, removed );
+                    if ( list.Count == 0 ) {
                         character.StatusEffects &= ~effect;
+                        OnStatusCleared?.Invoke ( character, effect );
+                    }
                 }
             }
         }
@@ -129,8 +141,15 @@ namespace meph {
         // Remove all instances of an effect and clear the bit.
         public void RemoveAllFactors ( Character character, STATUS_EFFECT effect ) {
             if ( characterFactors.TryGetValue ( character, out var arr ) ) {
-                arr[EffectToIndex ( effect )].Clear ( );
-                character.StatusEffects &= ~effect;
+                var list = arr[EffectToIndex ( effect )];
+                if ( list.Count > 0 ) {
+                    // emit removals, then clear
+                    for ( int i = 0; i < list.Count; i++ )
+                        OnFactorRemoved?.Invoke ( character, effect, list[i] );
+                    list.Clear ( );
+                    character.StatusEffects &= ~effect;
+                    OnStatusCleared?.Invoke ( character, effect );
+                }
             }
         }
 
@@ -171,6 +190,7 @@ namespace meph {
                     UpdateEffectList ( instances, IndexToEffect ( idx ), character, idx );
                 }
             }
+            OnFactorUpdate?.Invoke ( );
         }
     }
 }
