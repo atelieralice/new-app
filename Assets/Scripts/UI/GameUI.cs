@@ -278,8 +278,7 @@ namespace meph {
             cardSelectionPanel = new Control();
             cardSelectionPanel.Name = "CardSelectionPanel";
             cardSelectionPanel.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.BottomWide);
-            cardSelectionPanel.Position = new Vector2(0, 400);
-            cardSelectionPanel.Size = new Vector2(0, 200);
+            // Remove manual position and size - let the preset handle it
             cardSelectionPanel.Visible = false;
             AddChild(cardSelectionPanel);
 
@@ -305,8 +304,7 @@ namespace meph {
             charmSelectionPanel = new Control();
             charmSelectionPanel.Name = "CharmSelectionPanel";
             charmSelectionPanel.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.RightWide);
-            charmSelectionPanel.Position = new Vector2(600, 0);
-            charmSelectionPanel.Size = new Vector2(200, 0);
+            // Remove manual position and size - let the preset handle it
             charmSelectionPanel.Visible = false;
             AddChild(charmSelectionPanel);
 
