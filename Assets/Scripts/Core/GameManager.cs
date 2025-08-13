@@ -11,6 +11,9 @@ public enum GamePhase {
 
 public partial class GameManager : Node {
     public static GameManager Instance { get; private set; }
+    
+    // Add UI reference
+    private GameUI gameUI;
 
     public StateManager StateManager { get; private set; }
     public FactorManager FactorManager { get; private set; }
@@ -51,10 +54,14 @@ public partial class GameManager : Node {
         boardRoot = GetNode<Control> ( "%BoardRoot" );
         uiRoot = GetNode<Control> ( "%UI" );
         consoleLog = GetNode<RichTextLabel> ( "%ConsoleLog" );
-
+        
+        // Initialize UI
+        gameUI = GetNode<GameUI>("%GameUI");
+        
         if ( boardRoot == null ) ConsoleLog.Error ( "BoardRoot node not found!" );
         if ( uiRoot == null ) ConsoleLog.Error ( "UI node not found!" );
         if ( consoleLog == null ) ConsoleLog.Error ( "ConsoleLog node not found!" );
+        if ( gameUI == null ) ConsoleLog.Error ( "GameUI node not found!" );
     }
 
     private void InitializeConsole ( ) {
