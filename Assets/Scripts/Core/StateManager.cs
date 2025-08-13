@@ -10,8 +10,8 @@ namespace meph {
 
     public class StateManager {
         public TURN CurrentTurn { get; private set; } = TURN.ATTACKER;
-        public bool ActionsLocked { get; private set; } = false;
-        public int ActionsRemaining { get; private set; } = 1;
+        public bool ActionsLocked { get; set; } = false;  // Changed to public set
+        public int ActionsRemaining { get; set; } = 1;    // Changed to public set
 
         // Enhanced events with character context
         public event Action<TURN, Character> OnTurnStarted;

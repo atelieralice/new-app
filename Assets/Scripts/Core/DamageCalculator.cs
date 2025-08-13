@@ -16,13 +16,10 @@ namespace meph {
                 totalDamage += attacker.GetWeaponDamageBonus();
             }
             
-            // Apply Toughness earth damage bonus ONLY if this is earth essence damage
-            // (Normal damage doesn't get this bonus according to document)
-            
             // Apply defense reduction
             totalDamage = Math.Max(1, totalDamage - target.DEF);
             
-            // Check for critical hit - FIXED
+            // Check for critical hit
             bool isCrit = attacker.RollCritical();
             if (isCrit) {
                 // CritDamage is stored as decimal (0.05 = 5%, 0.07 = 7%, etc.)
@@ -38,8 +35,8 @@ namespace meph {
                 return;
             }
             
-            // Apply the damage through GameManager
-            GameManager.ApplyDamage(GameManager.Instance.FactorManager, target, totalDamage);
+            // Apply the damage through GameManager - FIXED
+            GameManager.Instance.ApplyDamage(target, totalDamage);
             GameEvents.TriggerAttackResolved(attacker, target, totalDamage, isCrit);
         }
 
@@ -61,7 +58,7 @@ namespace meph {
             // Apply essence defense reduction
             totalDamage = Math.Max(1, totalDamage - target.EssenceDEF);
             
-            // Check for critical hit - FIXED
+            // Check for critical hit
             bool isCrit = attacker.RollCritical();
             if (isCrit) {
                 // CritDamage is stored as decimal (0.05 = 5%, 0.07 = 7%, etc.)
@@ -71,8 +68,8 @@ namespace meph {
                 ConsoleLog.Combat($"Critical hit! {attacker.CharName} deals {critBonus} absolute damage ({attacker.CritDamage * 100f:F1}% of {target.CharName}'s Max LP)");
             }
             
-            // Apply the damage through GameManager
-            GameManager.ApplyDamage(GameManager.Instance.FactorManager, target, totalDamage);
+            // Apply the damage through GameManager - FIXED
+            GameManager.Instance.ApplyDamage(target, totalDamage);
             GameEvents.TriggerAttackResolved(attacker, target, totalDamage, isCrit);
             
             ConsoleLog.Combat($"{attacker.CharName} dealt {totalDamage} {essenceType} damage to {target.CharName}");
@@ -83,7 +80,7 @@ namespace meph {
             }
         }
 
-        // FIXED: Apply percentage-based damage that bypasses DEF but respects shields
+        // Apply percentage-based damage that bypasses DEF but respects shields
         public static void ApplyPercentageDamage(Character target, float percentage, Character.ESSENCE_TYPE? essenceType = null, Character source = null) {
             if (target == null) return;
 
@@ -95,9 +92,9 @@ namespace meph {
                 damage = (int)(damage * multiplier);
             }
             
-            // FIXED: Burning damage bypasses DEF and Essence DEF according to document
-            // Only apply through shield system
-            GameManager.ApplyDamage(GameManager.Instance.FactorManager, target, damage);
+            // Burning damage bypasses DEF and Essence DEF according to document
+            // Only apply through shield system - FIXED
+            GameManager.Instance.ApplyDamage(target, damage, true); // true = isAbsolute (bypasses DEF)
             
             if (essenceType.HasValue) {
                 ConsoleLog.Combat($"{target.CharName} takes {damage} {essenceType} percentage damage ({percentage}% of Max LP) - bypasses defense");
@@ -134,7 +131,7 @@ namespace meph {
             
             // Check for defeat
             if (target.LP <= 0) {
-                GameEvents.TriggerPlayerDefeated(target);
+                GameManager.Instance.HandlePlayerDefeat(target);
             }
         }
 

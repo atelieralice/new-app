@@ -50,6 +50,11 @@ namespace meph {
         public static event Action<Character> OnPassiveTriggered;
         public static event Action<Character, string> OnPassiveStateChanged;
 
+        // New Game State Events
+        public static event Action<Character> OnGameStateChanged;
+        public static event Action<Character, Character> OnPlayersSet;
+        public static event Action<string> OnGamePhaseChanged;
+
         // Trigger methods with better names
         public static void TriggerDamageDealt ( Character target, int damage, int remainingLP )
             => OnDamageDealt?.Invoke ( target, damage, remainingLP );
@@ -139,5 +144,15 @@ namespace meph {
 
         public static void TriggerPassiveStateChanged(Character character, string stateName)
             => OnPassiveStateChanged?.Invoke(character, stateName);
+
+        // New trigger methods for game state
+        public static void TriggerGameStateChanged(Character character)
+            => OnGameStateChanged?.Invoke(character);
+
+        public static void TriggerPlayersSet(Character attacker, Character defender)
+            => OnPlayersSet?.Invoke(attacker, defender);
+
+        public static void TriggerGamePhaseChanged(string phase)
+            => OnGamePhaseChanged?.Invoke(phase);
     }
 }

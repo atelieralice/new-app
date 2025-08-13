@@ -204,25 +204,25 @@ namespace meph {
         }
 
         // Helper method to resolve attack damage with critical hit calculation - FIXED NULL CHECKING
-        public static void ResolveAttackDamage ( Character attacker, Character target, int baseDamage ) {
-            if ( attacker == null || target == null ) {
-                ConsoleLog.Warn ( "Cannot resolve attack damage - attacker or target is null" );
+        public static void ResolveAttackDamage(Character attacker, Character target, int baseDamage) {
+            if (attacker == null || target == null) {
+                ConsoleLog.Warn("Cannot resolve attack damage - attacker or target is null");
                 return;
             }
 
-            bool isCrit = attacker.RollCritical ( );
+            bool isCrit = attacker.RollCritical();
             int finalDamage = baseDamage;
 
-            if ( isCrit ) {
-                int critBonus = (int)( baseDamage * attacker.CritDamage );
+            if (isCrit) {
+                int critBonus = (int)(baseDamage * attacker.CritDamage);
                 finalDamage += critBonus;
             }
 
-            // Apply the damage
-            GameManager.ApplyDamage ( GameManager.Instance.FactorManager, target, finalDamage );
+            // Apply the damage - FIXED: Use correct method signature
+            GameManager.Instance.ApplyDamage(target, finalDamage);
 
             // Trigger attack resolved event
-            GameEvents.TriggerAttackResolved ( attacker, target, finalDamage, isCrit );
+            GameEvents.TriggerAttackResolved(attacker, target, finalDamage, isCrit);
         }
     }
 }
