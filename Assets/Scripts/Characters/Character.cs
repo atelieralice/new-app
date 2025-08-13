@@ -104,7 +104,11 @@ namespace meph {
 
         // Get specific damage bonuses
         public int GetWeaponDamageBonus() => GetCharmBonus(c => c.WeaponType == WeaponType ? c.WeaponDamageBonus : 0);
-        public int GetEssenceDamageBonus(ESSENCE_TYPE essenceType) => GetCharmBonus(c => c.EssenceType == essenceType ? c.SpecificEssenceDamageBonus : 0);
+        public int GetEssenceDamageBonus(ESSENCE_TYPE essenceType) {
+            return EquippedCharms.Values
+                .Where(c => c.EssenceType == essenceType)
+                .Sum(c => c.SpecificEssenceDamageBonus);
+        }
         
         // Get burning damage multiplier including charm bonuses
         public float GetBurningDamageMultiplier() {
