@@ -1,17 +1,10 @@
-<<<<<<< HEAD
-[gd_scene load_steps=3 format=3 uid="uid://cejekpj07wa7j"]
-
-[ext_resource type="Script" uid="uid://voymnvksvdfj" path="res://Assets/Scripts/Core/GameManager.cs" id="1_wkehv"]
-[ext_resource type="PackedScene" uid="uid://6gl285kkqksl" path="res://Assets/Scenes/CardSlot.tscn" id="2_ygaiq"]
-=======
 [gd_scene load_steps=3 format=3 uid="uid://c34yuxkgs0vwm"]
 
 [ext_resource type="Script" uid="uid://voymnvksvdfj" path="res://Assets/Scripts/Core/GameManager.cs" id="1_l26l0"]
 [ext_resource type="Script" uid="uid://2e2f0cnvo11f" path="res://Assets/Scripts/UI/GameUI.cs" id="2_wkehv"]
->>>>>>> 703fc9fd13410f8d48c67f8ed0e448ef2c309f58
 
 [node name="Root" type="Node"]
-script = ExtResource("1_wkehv")
+script = ExtResource("1_l26l0")
 
 [node name="BoardRoot" type="Control" parent="."]
 unique_name_in_owner = true
@@ -46,7 +39,7 @@ metadata/_edit_lock_ = true
 [node name="GameUI" type="Control" parent="UI"]
 unique_name_in_owner = true
 layout_mode = 1
-anchor_left = 0.18836805
+anchor_left = 0.2699653
 anchor_right = 1.0
 anchor_bottom = 1.0
 script = ExtResource("2_wkehv")
@@ -56,7 +49,7 @@ metadata/_edit_use_anchors_ = true
 [node name="Panel" type="Panel" parent="UI"]
 layout_mode = 1
 anchors_preset = -1
-anchor_right = 0.18836805
+anchor_right = 0.2699653
 anchor_bottom = 1.003096
 metadata/_edit_use_anchors_ = true
 
@@ -75,9 +68,3 @@ theme_override_font_sizes/italics_font_size = 12
 theme_override_font_sizes/mono_font_size = 12
 text = "placeholder"
 metadata/_edit_lock_ = true
-
-[node name="SlotBackground" parent="." instance=ExtResource("2_ygaiq")]
-offset_left = 354.0
-offset_top = 123.0
-offset_right = 354.0
-offset_bottom = 123.0
