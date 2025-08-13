@@ -76,60 +76,44 @@ namespace meph {
         }
 
         public static void FreezeCard(Card card, int duration) {
-            card.Freeze(duration);
-            GameEvents.TriggerCardFrozen(card, duration);
+            if (card != null && !card.IsFrozen) {
+                card.Freeze(duration);
+                GameEvents.TriggerCardFrozen(card, duration);
+            }
         }
         public static void UnfreezeCard(Card card) {
             card.Unfreeze();
             GameEvents.TriggerCardUnfrozen(card);
         }
 
-        public static int ResolveToughness(FactorManager fm, Character character, int damage) {
-            if (damage <= 0) return 0;
-
-            var shields = fm.GetFactors(character, STATUS_EFFECT.TOUGHNESS);
-            if (shields.Count == 0) return damage;
-
-            int totalDP = 0;
-            for (int i = 0; i < shields.Count; i++)
-                totalDP += GetParamOrDefault(shields[i], ParamKeys.DP, 0);
-
-            if (totalDP == 0) return damage;
-
-            if (damage >= totalDP) {
-                int remaining = damage - totalDP;
-                // Shield breaks - remove all toughness instances
-                for (int i = 0; i < shields.Count; i++) {
-                    shields[i].Duration = 0;
-                    if (shields[i].Params != null && shields[i].Params.ContainsKey(ParamKeys.DP))
-                        shields[i].Params[ParamKeys.DP] = 0;
-                }
-                ConsoleLog.Combat($"{character.CharName}'s shield absorbed {totalDP} damage and broke");
-                return remaining;
-            }
-
-            // Shield absorbs all damage
-            int toConsume = damage;
-            for (int i = 0; i < shields.Count && toConsume > 0; i++) {
-                var s = shields[i];
-                int dp = GetParamOrDefault(s, ParamKeys.DP, 0);
-                if (dp <= 0) continue;
-
-                if (toConsume >= dp) {
-                    toConsume -= dp;
-                    s.Duration = 0;
-                    if (s.Params != null) s.Params[ParamKeys.DP] = 0;
+        public static int ResolveToughness(FactorManager fm, Character character, int incomingDamage) {
+            var shields = fm.GetFactors(character, Character.STATUS_EFFECT.TOUGHNESS);
+            int remainingDamage = incomingDamage;
+            
+            foreach (var shield in shields.ToList()) {
+                int dp = GetParamOrDefault(shield, ParamKeys.DP, 100);
+                
+                if (remainingDamage >= dp) {
+                    // Shield breaks
+                    remainingDamage -= dp;
+                    fm.RemoveFactorInstance(character, Character.STATUS_EFFECT.TOUGHNESS, shields.IndexOf(shield));
+                    ConsoleLog.Combat($"{character.CharName}'s shield absorbed {dp} damage and broke");
                 } else {
-                    s.Params[ParamKeys.DP] = dp - toConsume;
-                    toConsume = 0;
+                    // Shield absorbs all damage
+                    shield.Params[ParamKeys.DP] = dp - remainingDamage;
+                    remainingDamage = 0;
+                    ConsoleLog.Combat($"{character.CharName}'s shield absorbed {incomingDamage} damage");
+                    break;
                 }
             }
-            ConsoleLog.Combat($"{character.CharName}'s shield absorbed {damage} damage");
-            return 0;
+            
+            return remainingDamage;
         }
 
-        public static int GetToughnessEarthBonus(FactorManager fm, Character character) =>
-            fm.GetFactors(character, STATUS_EFFECT.TOUGHNESS).Count > 0 ? 150 : 0;
+        public static int GetToughnessEarthBonus(FactorManager fm, Character character) {
+            var toughnessFactors = fm.GetFactors(character, Character.STATUS_EFFECT.TOUGHNESS);
+            return toughnessFactors.Count * 150; // +150 Earth damage per Toughness
+        }
 
         // FIXED: Enhanced Healing resolution according to design document
         public static void ResolveHealing(FactorManager fm, Character character, Character target) {

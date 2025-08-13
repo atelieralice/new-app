@@ -1,5 +1,13 @@
 using Godot;
 using meph;
+using System.Linq;
+
+public enum GamePhase {
+    SETUP,
+    CHARACTER_SELECTION,
+    BATTLE, // Combined equip/battle phase
+    GAME_OVER
+}
 
 public partial class GameManager : Node {
     public static GameManager Instance { get; private set; }
@@ -13,6 +21,9 @@ public partial class GameManager : Node {
     private Control boardRoot;
     private Control uiRoot;
     private RichTextLabel consoleLog;
+
+    public GamePhase CurrentPhase { get; private set; } = GamePhase.SETUP;
+    public bool GameInProgress { get; private set; } = false;
 
     public override void _Ready ( ) {
         Instance = this;
@@ -31,6 +42,9 @@ public partial class GameManager : Node {
 
         ConsoleLog.Game ( "GameManager ready." );
         GameEvents.TriggerGameStarted ( );
+
+        // Start the game setup phase
+        StartGameSetup();
     }
 
     private void InitializeNodeReferences ( ) {
@@ -141,104 +155,302 @@ public partial class GameManager : Node {
         ConsoleLog.Game ( "Game reset" );
     }
 
-    private void ResolveTurnStart ( Character current, Character other ) {
-        if ( current == null ) {
-            FactorManager.UpdateFactors ( );
+    // Main Gameplay Loop Implementation
+    public void StartGameSetup() {
+        CurrentPhase = GamePhase.SETUP;
+        GameInProgress = false;
+        
+        ConsoleLog.Game("Starting game setup...");
+        GameEvents.TriggerGamePhaseChanged("SETUP");
+        
+        // Clear any existing game state
+        Reset();
+        
+        // Initialize game systems
+        StateManager = new StateManager();
+        FactorManager = new FactorManager();
+        StateManager.GetPlayer = (turn) => turn == TURN.ATTACKER ? Attacker : Defender;
+        
+        ConsoleLog.Game("Game setup complete. Ready for character selection.");
+        TransitionToCharacterSelection();
+    }
+
+    public void TransitionToCharacterSelection() {
+        CurrentPhase = GamePhase.CHARACTER_SELECTION;
+        GameEvents.TriggerGamePhaseChanged("CHARACTER_SELECTION");
+        ConsoleLog.Game("Waiting for players to select characters...");
+    }
+
+    public void SetPlayers(Character attacker, Character defender) {
+        if (CurrentPhase != GamePhase.CHARACTER_SELECTION) {
+            ConsoleLog.Warn("Cannot set players - not in character selection phase");
             return;
         }
 
-        ConsoleLog.Game ( $"{current}'s turn started" );
-
-        // Characters can't be frozen - only cards can be frozen
-        // if (FactorManager.GetFactors(current, Character.STATUS_EFFECT.FREEZE).Count > 0) {
-        //     StateManager.LockAction();
-        //     ConsoleLog.Warn($"{current} is frozen and cannot act this turn");
-        // }
-
-        // Resolve per-turn effects
-        FactorLogic.ResolveHealing ( FactorManager, current, other );
-        if ( other != null ) {
-            FactorLogic.ResolveRecharge ( FactorManager, current, other );
-            FactorLogic.ResolveGrowth ( FactorManager, current, other );
-        }
-        FactorLogic.ResolveBurning ( FactorManager, current );
-        FactorLogic.ResolveStorm ( FactorManager, current );
-        FactorLogic.ResolveMpRegeneration ( FactorManager, current );
-
-        // Age factors
-        FactorManager.UpdateFactors ( );
+        SetAttacker(attacker);
+        SetDefender(defender);
+        
+        GameEvents.TriggerPlayersSet(attacker, defender);
+        ConsoleLog.Game($"Players set: {attacker.CharName} vs {defender.CharName}");
+        
+        TransitionToCardEquipment();
     }
 
-    public static void ApplyDamage ( FactorManager factorManager, Character character, int damage ) {
-        if ( damage <= 0 || character == null ) return;
+    public void TransitionToCardEquipment() {
+        // Remove this method since you're using hybrid gameplay
+        // Just transition directly to battle
+        StartBattle();
+    }
 
-        int remaining = FactorLogic.ResolveToughness ( factorManager, character, damage );
+    // Fix StartBattle method
+    public void StartBattle() {
+        // Only check for CHARACTER_SELECTION (remove CARD_EQUIPMENT reference)
+        if (CurrentPhase != GamePhase.CHARACTER_SELECTION) {
+            ConsoleLog.Warn("Cannot start battle - not in character selection phase");
+            return;
+        }
 
-        if ( remaining > 0 ) {
+        if (!ValidateGameStart()) {
+            ConsoleLog.Error("Cannot start battle - validation failed");
+            return;
+        }
+
+        CurrentPhase = GamePhase.BATTLE;
+        GameInProgress = true;
+        
+        GameEvents.TriggerGamePhaseChanged("BATTLE");
+        ConsoleLog.Game("BATTLE BEGINS! Players can equip cards and attack!");
+        
+        // Initialize character passives
+        CharacterPassives.InitializePassives(Attacker);
+        CharacterPassives.InitializePassives(Defender);
+        
+        // FIXED LINE 229: Use GameEvents instead of direct event invocation
+        GameEvents.TriggerTurnStarted(GetCurrentPlayer());
+    }
+
+    private bool ValidateGameStart() {
+        if (Attacker == null || Defender == null) {
+            ConsoleLog.Error("Both players must be set before starting battle");
+            return false;
+        }
+
+        // Validate character cards are equipped
+        if (!Attacker.EquippedSlots.ContainsKey(Card.TYPE.C)) {
+            ConsoleLog.Error($"{Attacker.CharName} must have a character card equipped");
+            return false;
+        }
+
+        if (!Defender.EquippedSlots.ContainsKey(Card.TYPE.C)) {
+            ConsoleLog.Error($"{Defender.CharName} must have a character card equipped");
+            return false;
+        }
+
+        return true;
+    }
+
+    // Fixed turn resolution
+    private void ResolveTurnStart(Character current, Character other) {
+        if (current == null) {
+            FactorManager.UpdateFactors();
+            return;
+        }
+
+        ConsoleLog.Game($"{current}'s turn started");
+
+        // Execute character-specific turn start effects
+        CharacterPassives.ExecuteTurnStartEffects(current);
+
+        // Resolve per-turn effects in correct order
+        FactorLogic.ResolveHealing(FactorManager, current, other);
+        if (other != null) {
+            FactorLogic.ResolveRecharge(FactorManager, current, other);
+            FactorLogic.ResolveGrowth(FactorManager, current, other);
+        }
+        FactorLogic.ResolveBurning(FactorManager, current);
+        FactorLogic.ResolveStorm(FactorManager, current);
+        
+        // Age all factors
+        FactorManager.UpdateFactors();
+
+        // Regenerate resources (5% EP, 2% MP per game rules)
+        RegenerateResources(current);
+        
+        // Reset actions for new turn - use proper StateManager method
+        StateManager.ActionsRemaining = 1; // Reset to 1 action per turn
+        StateManager.ActionsLocked = false;
+    }
+
+    // Add missing RegenerateResources method
+    private void RegenerateResources(Character character) {
+        if (character == null) return;
+
+        int oldEP = character.EP;
+        int oldMP = character.MP;
+
+        // 5% EP regeneration per turn
+        int epRegen = Mathf.RoundToInt(character.MaxEP * 0.05f);
+        character.EP = Mathf.Min(character.EP + epRegen, character.MaxEP);
+
+        // 2% MP regeneration per turn  
+        int mpRegen = Mathf.RoundToInt(character.MaxMP * 0.02f);
+        character.MP = Mathf.Min(character.MP + mpRegen, character.MaxMP);
+
+        // Trigger events for actual regeneration
+        if (character.EP > oldEP || character.MP > oldMP) {
+            GameEvents.TriggerResourceRegenerated(character, character.EP - oldEP, character.MP - oldMP);
+        }
+    }
+
+    // Fixed damage application - make non-static to access instance
+    public void ApplyDamage(Character character, int damage, bool isAbsolute = false) {
+        if (damage <= 0 || character == null) return;
+
+        int finalDamage = damage;
+        
+        // Handle absolute damage (bypasses DEF but respects shields)
+        if (!isAbsolute) {
+            // Apply DEF reduction for non-absolute damage
+            finalDamage = Mathf.Max(damage - character.DEF, 0);
+        }
+
+        // Always check shields regardless of damage type
+        int remaining = FactorLogic.ResolveToughness(FactorManager, character, finalDamage);
+
+        if (remaining > 0) {
             int oldLP = character.LP;
-            character.LP = Mathf.Max ( character.LP - remaining, 0 );
+            character.LP = Mathf.Max(character.LP - remaining, 0);
 
             // Trigger resource loss event
-            if ( oldLP > character.LP ) {
-                GameEvents.TriggerResourceLost ( character, oldLP - character.LP, "LP" );
+            if (oldLP > character.LP) {
+                GameEvents.TriggerResourceLost(character, oldLP - character.LP, "LP");
             }
         }
 
-        GameEvents.TriggerDamageDealt ( character, damage, character.LP );
+        GameEvents.TriggerDamageDealt(character, damage, character.LP);
 
-        // Check for defeat
-        if ( character.LP <= 0 ) {
-            GameEvents.TriggerPlayerDefeated ( character );
+        // Check for defeat and end game if necessary
+        if (character.LP <= 0) {
+            HandlePlayerDefeat(character);
         }
     }
 
-    // Public API for UI and Board interactions
-    public void EndTurn ( ) => StateManager.EndTurn ( );
+    // Fixed normal attack with proper dictionary access
+    public void PerformNormalAttack(Character target) {
+        var current = StateManager.GetPlayer?.Invoke(StateManager.CurrentTurn);
+        if (current == null || target == null) return;
 
-    public void UseCard ( Card.TYPE slotType, Character target ) {
-        var current = StateManager.GetPlayer?.Invoke ( StateManager.CurrentTurn );
-        if ( current != null ) {
-            CharacterLogic.UseSlot ( current, slotType, target );
-        }
-    }
-
-    public void PerformNormalAttack ( Character target ) {
-        var current = StateManager.GetPlayer?.Invoke ( StateManager.CurrentTurn );
-        if ( current != null ) {
-            CharacterLogic.PerformNormalAttack ( current, target );
-        }
-    }
-
-    public void EquipCard ( Character character, CardData cardData ) {
-        if ( character == null || cardData == null ) return;
-
-        var card = CreateCardFromData ( cardData );
-        CharacterLogic.EquipCardToSlot ( character, card );
-    }
-
-    // Simple card creation from data - card effects will be handled by UI/scripting layer
-    private Card CreateCardFromData ( CardData data ) {
-        var card = new Card {
-            Id = data.id,
-            Name = data.name,
-            Type = data.type,
-            Description = data.description,
-            IsSwift = data.isSwift,
-            Requirements = new System.Collections.Generic.Dictionary<string, int> ( )
-        };
-
-        // Convert Godot dictionary to C# dictionary
-        foreach ( var kvp in data.requirements ) {
-            card.Requirements[kvp.Key] = kvp.Value;
+        if (!StateManager.CanAct()) {
+            ConsoleLog.Warn("Cannot perform normal attack - no actions remaining");
+            return;
         }
 
-        // Card effects will be assigned by the UI layer or through scripting
-        // This keeps the core logic clean and flexible
-        return card;
+        // Use TryGetValue instead of GetValueOrDefault
+        current.EquippedSlots.TryGetValue(Card.TYPE.BW, out Card baseWeapon);
+        current.EquippedSlots.TryGetValue(Card.TYPE.SW, out Card secondaryWeapon);
+
+        if (baseWeapon?.IsFrozen == true || secondaryWeapon?.IsFrozen == true) {
+            ConsoleLog.Warn("Cannot perform normal attack - weapon is frozen");
+            return;
+        }
+
+        StateManager.TryAction(() => {
+            // Execute weapon effects
+            baseWeapon?.Effect?.Invoke(current, target);
+            secondaryWeapon?.Effect?.Invoke(current, target);
+            
+            GameEvents.TriggerNormalAttack(current, Card.TYPE.BW);
+            ConsoleLog.Combat($"{current.CharName} performed normal attack on {target.CharName}");
+        });
     }
 
-    // Node access helpers for other systems
-    public Control GetBoardRoot ( ) => boardRoot;
-    public Control GetUIRoot ( ) => uiRoot;
-    public RichTextLabel GetConsole ( ) => consoleLog;
+    // Enhanced equipment - allow during battle phase
+    public void EquipCard(Character character, Card card) {
+        if (character == null || card == null) {
+            ConsoleLog.Warn("Cannot equip card - character or card is null");
+            return;
+        }
+
+        // Allow equipment during character selection and battle (hybrid gameplay)
+        if (CurrentPhase != GamePhase.CHARACTER_SELECTION && CurrentPhase != GamePhase.BATTLE) {
+            ConsoleLog.Warn("Cannot equip cards outside of active gameplay");
+            return;
+        }
+
+        CharacterLogic.EquipCardToSlot(character, card);
+    }
+
+    public void EquipCharm(Character character, Charm charm) {
+        if (character == null || charm == null) {
+            ConsoleLog.Warn("Cannot equip charm - character or charm is null");
+            return;
+        }
+
+        // Allow charm equipping during battle phase too
+        if (CurrentPhase != GamePhase.CHARACTER_SELECTION && CurrentPhase != GamePhase.BATTLE) {
+            ConsoleLog.Warn("Cannot equip charms outside of active gameplay");
+            return;
+        }
+
+        CharmLogic.EquipCharm(character, charm);
+    }
+
+    // Updated API for hybrid gameplay
+    public bool CanEquipCards() => CurrentPhase == GamePhase.CHARACTER_SELECTION || CurrentPhase == GamePhase.BATTLE;
+    public bool CanPerformActions() => CurrentPhase == GamePhase.BATTLE && GameInProgress;
+
+    // Add EndTurn method for manual turn ending
+    public void EndTurn() {
+        if (!GameInProgress || CurrentPhase != GamePhase.BATTLE) {
+            ConsoleLog.Warn("Cannot end turn - game not in progress");
+            return;
+        }
+
+        var currentPlayer = GetCurrentPlayer();
+        ConsoleLog.Game($"{currentPlayer?.CharName ?? "Unknown"} ended their turn");
+        
+        // FIXED LINE 413: Use GameEvents instead of direct event invocation
+        GameEvents.TriggerTurnEnded(currentPlayer);
+        
+        // Switch to next turn
+        StateManager.NextTurn();
+    }
+
+    // Add missing GetCurrentPlayer method
+    public Character GetCurrentPlayer() => StateManager.GetPlayer?.Invoke(StateManager.CurrentTurn);
+
+    // Enhanced card usage with validation
+    public void UseCard(Card.TYPE slotType, Character target) {
+        var current = GetCurrentPlayer();
+        if (current == null) {
+            ConsoleLog.Warn("No current player to use card");
+            return;
+        }
+
+        if (!StateManager.CanAct()) {
+            ConsoleLog.Warn("Cannot use card - no actions remaining");
+            return;
+        }
+
+        CharacterLogic.UseSlot(current, slotType, target);
+    }
+
+    // Game end handling
+    public void HandlePlayerDefeat(Character defeated) {
+        var winner = GetOpponent(defeated);
+        CurrentPhase = GamePhase.GAME_OVER;
+        GameInProgress = false;
+        
+        ConsoleLog.Game($"{defeated.CharName} was defeated! {winner.CharName} wins!");
+        
+        GameEvents.TriggerPlayerDefeated(defeated);
+        GameEvents.TriggerPlayerVictory(winner);
+        GameEvents.TriggerGameEnded();
+        GameEvents.TriggerGamePhaseChanged("GAME_OVER");
+    }
+
+    public void RestartGame() {
+        ConsoleLog.Game("Restarting game...");
+        StartGameSetup();
+    }
 }

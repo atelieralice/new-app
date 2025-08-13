@@ -112,5 +112,20 @@ namespace meph {
                 }
             }
         }
+
+        public static void ExecuteTurnStartEffects(Character character) {
+            if (character == null) return;
+            
+            switch (character.CharName) {
+                case "Yu":
+                    ExecuteYuTurnStartPassive(character);
+                    break;
+                case "Rok":
+                    // Rok doesn't have turn-start effects, but check low health mode
+                    CheckRokLowHealthMode(character);
+                    break;
+                // Add other characters as needed
+            }
+        }
     }
 }
