@@ -1,0 +1,36 @@
+[gd_scene load_steps=2 format=3 uid="uid://6gl285kkqksl"]
+
+[ext_resource type="Script" uid="uid://cu5og15yk44x1" path="res://Assets/Scripts/UI/CardSlot.cs" id="1_bm3bw"]
+
+[node name="SlotBackground" type="Panel"]
+anchors_preset = -1
+anchor_right = 0.055555556
+anchor_bottom = 0.09876543
+mouse_filter = 1
+script = ExtResource("1_bm3bw")
+metadata/_edit_use_anchors_ = true
+
+[node name="SlotLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = 48.0
+offset_right = 64.0
+offset_bottom = 17.0
+theme_override_font_sizes/font_size = 12
+
+[node name="DropZone" type="Control" parent="."]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+mouse_filter = 2
+
+[node name="DropIndicator" type="Label" parent="DropZone"]
+layout_mode = 0
+offset_right = 16.0
+offset_bottom = 17.0
+theme_override_font_sizes/font_size = 12
+
+[node name="EquippedCardDisplay" type="Control" parent="."]
+anchors_preset = 0
+offset_left = 24.0
+offset_right = 64.0
+offset_bottom = 40.0

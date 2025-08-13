@@ -1,9 +1,10 @@
-[gd_scene load_steps=2 format=3 uid="uid://cejekpj07wa7j"]
+[gd_scene load_steps=3 format=3 uid="uid://cejekpj07wa7j"]
 
-[ext_resource type="Script" uid="uid://voymnvksvdfj" path="res://Assets/Scripts/Core/GameManager.cs" id="1_l26l0"]
+[ext_resource type="Script" uid="uid://voymnvksvdfj" path="res://Assets/Scripts/Core/GameManager.cs" id="1_wkehv"]
+[ext_resource type="PackedScene" uid="uid://6gl285kkqksl" path="res://Assets/Scenes/CardSlot.tscn" id="2_ygaiq"]
 
 [node name="Root" type="Node"]
-script = ExtResource("1_l26l0")
+script = ExtResource("1_wkehv")
 
 [node name="BoardRoot" type="Control" parent="."]
 unique_name_in_owner = true
@@ -55,3 +56,9 @@ theme_override_font_sizes/italics_font_size = 12
 theme_override_font_sizes/mono_font_size = 12
 text = "placeholder"
 metadata/_edit_lock_ = true
+
+[node name="SlotBackground" parent="." instance=ExtResource("2_ygaiq")]
+offset_left = 354.0
+offset_top = 123.0
+offset_right = 354.0
+offset_bottom = 123.0

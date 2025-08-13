@@ -1,0 +1,57 @@
+[gd_scene load_steps=2 format=3 uid="uid://c0qcss34rm4gw"]
+
+[ext_resource type="Script" uid="uid://dxibqff201io4" path="res://Assets/Scripts/UI/DraggableCard.cs" id="1_x7xbh"]
+
+[node name="DraggableCard" type="Panel"]
+anchors_preset = -1
+anchor_right = 0.055555556
+anchor_bottom = 0.09876543
+mouse_filter = 1
+script = ExtResource("1_x7xbh")
+metadata/_edit_use_anchors_ = true
+
+[node name="CardArt" type="TextureRect" parent="."]
+layout_mode = 0
+offset_left = 12.0
+offset_right = 52.0
+expand_mode = 3
+
+[node name="CardName" type="Label" parent="."]
+custom_minimum_size = Vector2(10, 10)
+layout_mode = 0
+offset_left = 12.0
+offset_top = 4.0
+offset_right = 52.0
+offset_bottom = 27.0
+theme_override_font_sizes/font_size = 12
+autowrap_mode = 3
+
+[node name="CardType" type="Label" parent="."]
+custom_minimum_size = Vector2(10, 10)
+layout_mode = 0
+offset_left = 12.0
+offset_top = 31.0
+offset_right = 52.0
+offset_bottom = 54.0
+theme_override_font_sizes/font_size = 12
+autowrap_mode = 3
+
+[node name="CardDescription" type="Label" parent="."]
+custom_minimum_size = Vector2(10, 10)
+layout_mode = 0
+offset_left = 12.0
+offset_top = 58.0
+offset_right = 52.0
+offset_bottom = 81.0
+theme_override_font_sizes/font_size = 12
+autowrap_mode = 3
+
+[node name="Requirements" type="Label" parent="."]
+custom_minimum_size = Vector2(10, 10)
+layout_mode = 0
+offset_left = 12.0
+offset_top = 85.0
+offset_right = 52.0
+offset_bottom = 108.0
+theme_override_font_sizes/font_size = 12
+autowrap_mode = 3
