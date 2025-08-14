@@ -53,7 +53,7 @@ namespace meph {
         private Label currentTurnLabel;
         private Label gameModeLabel;
 
-        // Equipment Display
+        // Equipment Display - Organized by card type
         private VBoxContainer player1EquipmentContainer;
         private VBoxContainer player2EquipmentContainer;
         private VBoxContainer player1CharmsContainer;
@@ -70,8 +70,9 @@ namespace meph {
         }
 
         private void CreateUIStructure() {
-            // Set main container properties
+            // Set main container properties - make it larger
             this.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+            this.CustomMinimumSize = new Vector2(1400, 900); // Larger UI
             
             // Create main panels
             CreateModeSelectionPanel();
@@ -97,11 +98,12 @@ namespace meph {
             titleLabel.Text = "SELECT GAME MODE";
             titleLabel.HorizontalAlignment = HorizontalAlignment.Center;
             titleLabel.AddThemeStyleboxOverride("normal", new StyleBoxFlat());
+            titleLabel.AddThemeFontSizeOverride("font_size", 24);
             mainVBox.AddChild(titleLabel);
 
             // Add spacer
             var spacer1 = new Control();
-            spacer1.CustomMinimumSize = new Vector2(0, 50);
+            spacer1.CustomMinimumSize = new Vector2(0, 80);
             mainVBox.AddChild(spacer1);
 
             // Mode buttons container
@@ -112,21 +114,23 @@ namespace meph {
             // Character Battle Mode button
             characterBattleModeButton = new Button();
             characterBattleModeButton.Text = "CHARACTER BATTLE\n\nCharacters start fully equipped\nwith their signature cards.\nFast-paced combat!";
-            characterBattleModeButton.CustomMinimumSize = new Vector2(300, 120);
+            characterBattleModeButton.CustomMinimumSize = new Vector2(400, 150);
             characterBattleModeButton.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+            characterBattleModeButton.AddThemeFontSizeOverride("font_size", 16);
             characterBattleModeButton.Pressed += () => OnModeSelected(GameMode.CHARACTER_BATTLE);
             modeButtonsVBox.AddChild(characterBattleModeButton);
 
             // Add spacer between buttons
             var spacer2 = new Control();
-            spacer2.CustomMinimumSize = new Vector2(0, 20);
+            spacer2.CustomMinimumSize = new Vector2(0, 30);
             modeButtonsVBox.AddChild(spacer2);
 
             // Flexible Mode button
             flexibleModeButton = new Button();
             flexibleModeButton.Text = "FLEXIBLE MODE\n\nEquip any cards to any character!\nEquipping uses actions.\nStrategic gameplay!";
-            flexibleModeButton.CustomMinimumSize = new Vector2(300, 120);
+            flexibleModeButton.CustomMinimumSize = new Vector2(400, 150);
             flexibleModeButton.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+            flexibleModeButton.AddThemeFontSizeOverride("font_size", 16);
             flexibleModeButton.Pressed += () => OnModeSelected(GameMode.FLEXIBLE_MODE);
             modeButtonsVBox.AddChild(flexibleModeButton);
         }
@@ -148,11 +152,12 @@ namespace meph {
             titleLabel.Text = "SELECT CHARACTERS";
             titleLabel.HorizontalAlignment = HorizontalAlignment.Center;
             titleLabel.AddThemeStyleboxOverride("normal", new StyleBoxFlat());
+            titleLabel.AddThemeFontSizeOverride("font_size", 24);
             mainVBox.AddChild(titleLabel);
 
             // Add spacer
             var spacer1 = new Control();
-            spacer1.CustomMinimumSize = new Vector2(0, 20);
+            spacer1.CustomMinimumSize = new Vector2(0, 40);
             mainVBox.AddChild(spacer1);
 
             // Player selection container
@@ -168,6 +173,7 @@ namespace meph {
             var player1Label = new Label();
             player1Label.Text = "PLAYER 1";
             player1Label.HorizontalAlignment = HorizontalAlignment.Center;
+            player1Label.AddThemeFontSizeOverride("font_size", 18);
             player1VBox.AddChild(player1Label);
 
             player1CharacterContainer = new VBoxContainer();
@@ -176,7 +182,7 @@ namespace meph {
 
             // Separator
             var separator = new VSeparator();
-            separator.CustomMinimumSize = new Vector2(20, 0);
+            separator.CustomMinimumSize = new Vector2(40, 0);
             playersHBox.AddChild(separator);
 
             // Player 2 section
@@ -187,6 +193,7 @@ namespace meph {
             var player2Label = new Label();
             player2Label.Text = "PLAYER 2";
             player2Label.HorizontalAlignment = HorizontalAlignment.Center;
+            player2Label.AddThemeFontSizeOverride("font_size", 18);
             player2VBox.AddChild(player2Label);
 
             player2CharacterContainer = new VBoxContainer();
@@ -195,14 +202,15 @@ namespace meph {
 
             // Add spacer
             var spacer2 = new Control();
-            spacer2.CustomMinimumSize = new Vector2(0, 20);
+            spacer2.CustomMinimumSize = new Vector2(0, 40);
             mainVBox.AddChild(spacer2);
 
             // Start Battle button
             startBattleButton = new Button();
             startBattleButton.Text = "START BATTLE";
-            startBattleButton.CustomMinimumSize = new Vector2(200, 50);
+            startBattleButton.CustomMinimumSize = new Vector2(300, 60);
             startBattleButton.SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter;
+            startBattleButton.AddThemeFontSizeOverride("font_size", 18);
             startBattleButton.Disabled = true;
             startBattleButton.Pressed += OnStartBattlePressed;
             mainVBox.AddChild(startBattleButton);
@@ -225,6 +233,8 @@ namespace meph {
             gameModeLabel.Text = "MODE: CHARACTER BATTLE";
             gameModeLabel.HorizontalAlignment = HorizontalAlignment.Center;
             gameModeLabel.AddThemeColorOverride("font_color", Colors.Yellow);
+            gameModeLabel.AddThemeFontSizeOverride("font_size", 20);
+            gameModeLabel.CustomMinimumSize = new Vector2(0, 40);
             mainVBox.AddChild(gameModeLabel);
 
             // Main game container
@@ -245,13 +255,14 @@ namespace meph {
         private void CreatePlayerInfoPanel(HBoxContainer parent, bool isPlayer1) {
             var playerVBox = new VBoxContainer();
             playerVBox.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-            playerVBox.CustomMinimumSize = new Vector2(300, 0);
+            playerVBox.CustomMinimumSize = new Vector2(450, 0); // Larger width
             parent.AddChild(playerVBox);
 
             // Player name (initially hidden)
             var nameLabel = new Label();
             nameLabel.Text = isPlayer1 ? "PLAYER 1" : "PLAYER 2";
             nameLabel.HorizontalAlignment = HorizontalAlignment.Center;
+            nameLabel.AddThemeFontSizeOverride("font_size", 18);
             nameLabel.Visible = false; // Hide until character is set
             playerVBox.AddChild(nameLabel);
 
@@ -264,6 +275,7 @@ namespace meph {
             // Resource bars container
             var resourcesVBox = new VBoxContainer();
             resourcesVBox.Visible = false; // Hide until character is set
+            resourcesVBox.CustomMinimumSize = new Vector2(0, 120);
             playerVBox.AddChild(resourcesVBox);
 
             // LP (Health) Section
@@ -272,19 +284,22 @@ namespace meph {
 
             var lpLabel = new Label();
             lpLabel.Text = "LP: ";
-            lpLabel.CustomMinimumSize = new Vector2(40, 0);
+            lpLabel.CustomMinimumSize = new Vector2(50, 0);
+            lpLabel.AddThemeFontSizeOverride("font_size", 14);
             lpHBox.AddChild(lpLabel);
 
             var lpBar = new ProgressBar();
             lpBar.ShowPercentage = false;
-            lpBar.CustomMinimumSize = new Vector2(200, 25);
+            lpBar.CustomMinimumSize = new Vector2(280, 30); // Larger bars
             lpBar.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
             lpBar.AddThemeColorOverride("fill", Colors.Red);
+            lpBar.MaxValue = 100;
             lpHBox.AddChild(lpBar);
 
             var lpValueLabel = new Label();
             lpValueLabel.Text = "0/0";
-            lpValueLabel.CustomMinimumSize = new Vector2(80, 0);
+            lpValueLabel.CustomMinimumSize = new Vector2(100, 0);
+            lpValueLabel.AddThemeFontSizeOverride("font_size", 12);
             lpHBox.AddChild(lpValueLabel);
 
             // EP (Energy) Section
@@ -293,19 +308,22 @@ namespace meph {
 
             var epLabel = new Label();
             epLabel.Text = "EP: ";
-            epLabel.CustomMinimumSize = new Vector2(40, 0);
+            epLabel.CustomMinimumSize = new Vector2(50, 0);
+            epLabel.AddThemeFontSizeOverride("font_size", 14);
             epHBox.AddChild(epLabel);
 
             var epBar = new ProgressBar();
             epBar.ShowPercentage = false;
-            epBar.CustomMinimumSize = new Vector2(200, 20);
+            epBar.CustomMinimumSize = new Vector2(280, 25);
             epBar.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
             epBar.AddThemeColorOverride("fill", Colors.Orange);
+            epBar.MaxValue = 100;
             epHBox.AddChild(epBar);
 
             var epValueLabel = new Label();
             epValueLabel.Text = "0/0";
-            epValueLabel.CustomMinimumSize = new Vector2(80, 0);
+            epValueLabel.CustomMinimumSize = new Vector2(100, 0);
+            epValueLabel.AddThemeFontSizeOverride("font_size", 12);
             epHBox.AddChild(epValueLabel);
 
             // MP (Mana) Section
@@ -314,25 +332,30 @@ namespace meph {
 
             var mpLabel = new Label();
             mpLabel.Text = "MP: ";
-            mpLabel.CustomMinimumSize = new Vector2(40, 0);
+            mpLabel.CustomMinimumSize = new Vector2(50, 0);
+            mpLabel.AddThemeFontSizeOverride("font_size", 14);
             mpHBox.AddChild(mpLabel);
 
             var mpBar = new ProgressBar();
             mpBar.ShowPercentage = false;
-            mpBar.CustomMinimumSize = new Vector2(200, 20);
+            mpBar.CustomMinimumSize = new Vector2(280, 25);
             mpBar.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
             mpBar.AddThemeColorOverride("fill", Colors.Blue);
+            mpBar.MaxValue = 100;
             mpHBox.AddChild(mpBar);
 
             var mpValueLabel = new Label();
             mpValueLabel.Text = "0/0";
-            mpValueLabel.CustomMinimumSize = new Vector2(80, 0);
+            mpValueLabel.CustomMinimumSize = new Vector2(100, 0);
+            mpValueLabel.AddThemeFontSizeOverride("font_size", 12);
             mpHBox.AddChild(mpValueLabel);
 
             // UP (Ultimate) Section
             var upLabel = new Label();
             upLabel.Text = "UP: 0/0";
             upLabel.AddThemeColorOverride("font_color", Colors.Gold);
+            upLabel.AddThemeFontSizeOverride("font_size", 14);
+            upLabel.CustomMinimumSize = new Vector2(0, 25);
             resourcesVBox.AddChild(upLabel);
 
             // Store references
@@ -357,29 +380,32 @@ namespace meph {
             // Equipment section (initially hidden)
             var equipmentSection = new VBoxContainer();
             equipmentSection.Visible = false;
+            equipmentSection.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
             playerVBox.AddChild(equipmentSection);
 
             var equipmentLabel = new Label();
             equipmentLabel.Text = "EQUIPMENT:";
             equipmentLabel.AddThemeColorOverride("font_color", Colors.Yellow);
+            equipmentLabel.AddThemeFontSizeOverride("font_size", 16);
             equipmentSection.AddChild(equipmentLabel);
 
             var equipmentScrollContainer = new ScrollContainer();
-            equipmentScrollContainer.CustomMinimumSize = new Vector2(0, 150);
+            equipmentScrollContainer.CustomMinimumSize = new Vector2(0, 300); // Larger equipment area
             equipmentScrollContainer.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
             equipmentSection.AddChild(equipmentScrollContainer);
 
             var equipmentContainer = new VBoxContainer();
             equipmentScrollContainer.AddChild(equipmentContainer);
 
-            // Charms section (initially hidden)
+            // Charms section
             var charmsLabel = new Label();
             charmsLabel.Text = "CHARMS:";
             charmsLabel.AddThemeColorOverride("font_color", Colors.Cyan);
+            charmsLabel.AddThemeFontSizeOverride("font_size", 16);
             equipmentSection.AddChild(charmsLabel);
 
             var charmsScrollContainer = new ScrollContainer();
-            charmsScrollContainer.CustomMinimumSize = new Vector2(0, 100);
+            charmsScrollContainer.CustomMinimumSize = new Vector2(0, 150);
             charmsScrollContainer.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
             equipmentSection.AddChild(charmsScrollContainer);
 
@@ -415,38 +441,52 @@ namespace meph {
         private void CreateActionPanel(HBoxContainer parent) {
             var actionVBox = new VBoxContainer();
             actionVBox.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-            actionVBox.CustomMinimumSize = new Vector2(250, 0);
+            actionVBox.CustomMinimumSize = new Vector2(350, 0); // Larger action panel
             parent.AddChild(actionVBox);
 
             // Current turn indicator
             currentTurnLabel = new Label();
             currentTurnLabel.Text = "WAITING FOR GAME TO START";
             currentTurnLabel.HorizontalAlignment = HorizontalAlignment.Center;
+            currentTurnLabel.AddThemeFontSizeOverride("font_size", 16);
+            currentTurnLabel.CustomMinimumSize = new Vector2(0, 50);
+            currentTurnLabel.AutowrapMode = TextServer.AutowrapMode.WordSmart;
             actionVBox.AddChild(currentTurnLabel);
 
             // Add spacer
             var spacer = new Control();
-            spacer.CustomMinimumSize = new Vector2(0, 20);
+            spacer.CustomMinimumSize = new Vector2(0, 30);
             actionVBox.AddChild(spacer);
 
             // Action buttons
             normalAttackButton = new Button();
             normalAttackButton.Text = "NORMAL ATTACK";
-            normalAttackButton.CustomMinimumSize = new Vector2(0, 40);
+            normalAttackButton.CustomMinimumSize = new Vector2(250, 50);
+            normalAttackButton.AddThemeFontSizeOverride("font_size", 14);
             normalAttackButton.Pressed += OnNormalAttackPressed;
             normalAttackButton.Disabled = true;
             actionVBox.AddChild(normalAttackButton);
 
+            var spacer2 = new Control();
+            spacer2.CustomMinimumSize = new Vector2(0, 15);
+            actionVBox.AddChild(spacer2);
+
             useCardButton = new Button();
             useCardButton.Text = "USE EQUIPPED CARDS";
-            useCardButton.CustomMinimumSize = new Vector2(0, 40);
+            useCardButton.CustomMinimumSize = new Vector2(250, 50);
+            useCardButton.AddThemeFontSizeOverride("font_size", 14);
             useCardButton.Pressed += OnUseCardPressed;
             useCardButton.Disabled = true;
             actionVBox.AddChild(useCardButton);
 
+            var spacer3 = new Control();
+            spacer3.CustomMinimumSize = new Vector2(0, 15);
+            actionVBox.AddChild(spacer3);
+
             endTurnButton = new Button();
             endTurnButton.Text = "END TURN";
-            endTurnButton.CustomMinimumSize = new Vector2(0, 40);
+            endTurnButton.CustomMinimumSize = new Vector2(250, 50);
+            endTurnButton.AddThemeFontSizeOverride("font_size", 14);
             endTurnButton.Pressed += OnEndTurnPressed;
             endTurnButton.Disabled = true;
             actionVBox.AddChild(endTurnButton);
@@ -456,7 +496,7 @@ namespace meph {
             cardSelectionPanel = new Control();
             cardSelectionPanel.Name = "CardSelectionPanel";
             cardSelectionPanel.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.BottomWide);
-            cardSelectionPanel.OffsetTop = -200; // Take bottom 200px
+            cardSelectionPanel.OffsetTop = -250; // Larger card panel
             cardSelectionPanel.Visible = false;
             AddChild(cardSelectionPanel);
 
@@ -468,6 +508,7 @@ namespace meph {
             cardLabel.Text = "AVAILABLE CARDS";
             cardLabel.HorizontalAlignment = HorizontalAlignment.Center;
             cardLabel.AddThemeColorOverride("font_color", Colors.White);
+            cardLabel.AddThemeFontSizeOverride("font_size", 16);
             cardVBox.AddChild(cardLabel);
 
             var cardScrollContainer = new ScrollContainer();
@@ -475,7 +516,7 @@ namespace meph {
             cardVBox.AddChild(cardScrollContainer);
 
             availableCardsContainer = new GridContainer();
-            availableCardsContainer.Columns = 5;
+            availableCardsContainer.Columns = 6; // More columns for larger UI
             cardScrollContainer.AddChild(availableCardsContainer);
         }
 
@@ -483,7 +524,7 @@ namespace meph {
             charmSelectionPanel = new Control();
             charmSelectionPanel.Name = "CharmSelectionPanel";
             charmSelectionPanel.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.RightWide);
-            charmSelectionPanel.OffsetLeft = -250; // Take right 250px
+            charmSelectionPanel.OffsetLeft = -300; // Larger charm panel
             charmSelectionPanel.Visible = false;
             AddChild(charmSelectionPanel);
 
@@ -495,6 +536,7 @@ namespace meph {
             charmLabel.Text = "CHARMS";
             charmLabel.HorizontalAlignment = HorizontalAlignment.Center;
             charmLabel.AddThemeColorOverride("font_color", Colors.White);
+            charmLabel.AddThemeFontSizeOverride("font_size", 16);
             charmVBox.AddChild(charmLabel);
 
             var charmScrollContainer = new ScrollContainer();
@@ -515,7 +557,7 @@ namespace meph {
             GameEvents.OnCardEquipped += OnCardEquipped;
             GameEvents.OnCharmEquipped += OnCharmEquipped;
             GameEvents.OnDamageDealt += OnDamageDealt;
-            GameEvents.OnActionsChanged += OnActionsChanged; // This should trigger the update
+            GameEvents.OnActionsChanged += OnActionsChanged;
             GameEvents.OnPlayerVictory += OnPlayerVictory;
             GameEvents.OnGameEnded += OnGameEnded;
         }
@@ -560,8 +602,9 @@ namespace meph {
         private Button CreateCharacterButton(CharacterData data, int player) {
             var button = new Button();
             button.Text = $"{data.charName}\nLP: {data.maxLP}\nEP: {data.maxEP}\nMP: {data.maxMP}";
-            button.CustomMinimumSize = new Vector2(150, 100);
+            button.CustomMinimumSize = new Vector2(200, 120); // Larger character buttons
             button.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+            button.AddThemeFontSizeOverride("font_size", 14);
             button.Pressed += () => OnCharacterSelected(data, player);
             return button;
         }
@@ -723,8 +766,9 @@ namespace meph {
             var currentPlayer = GameManager.Instance.GetCurrentPlayer();
             
             button.Text = $"{card.Name}\n{card.Type}\n{GetShortDescription(card.Description)}";
-            button.CustomMinimumSize = new Vector2(160, 90);
+            button.CustomMinimumSize = new Vector2(180, 110); // Larger card buttons
             button.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+            button.AddThemeFontSizeOverride("font_size", 12);
             
             // Check if current player can equip this card (Q/U restrictions)
             bool canEquip = currentPlayer == null || GameManager.Instance.CanCharacterEquipCard(currentPlayer, card);
@@ -748,8 +792,9 @@ namespace meph {
         private Button CreateCharmButton(Charm charm) {
             var button = new Button();
             button.Text = $"{charm.Name}\n{charm.Slot}";
-            button.CustomMinimumSize = new Vector2(200, 70);
+            button.CustomMinimumSize = new Vector2(250, 80); // Larger charm buttons
             button.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+            button.AddThemeFontSizeOverride("font_size", 12);
             button.Pressed += () => OnCharmSelected(charm);
             
             // Show action cost in Flexible Mode
@@ -762,7 +807,7 @@ namespace meph {
 
         private string GetShortDescription(string description) {
             if (string.IsNullOrEmpty(description)) return "";
-            return description.Length > 40 ? description.Substring(0, 37) + "..." : description;
+            return description.Length > 35 ? description.Substring(0, 32) + "..." : description;
         }
 
         private void OnCardSelected(Card card) {
@@ -812,7 +857,7 @@ namespace meph {
         private void ShowEquippedCardsPopup(Character character) {
             var popup = new AcceptDialog();
             popup.Title = $"Use {character.CharName}'s Cards";
-            popup.Size = new Vector2I(450, 350);
+            popup.Size = new Vector2I(500, 400); // Larger popup
 
             var vbox = new VBoxContainer();
             popup.AddChild(vbox);
@@ -824,6 +869,8 @@ namespace meph {
                     hasUsableCards = true;
                     var button = new Button();
                     button.Text = $"Use {kvp.Value.Name} ({kvp.Key})";
+                    button.CustomMinimumSize = new Vector2(400, 40);
+                    button.AddThemeFontSizeOverride("font_size", 14);
                     
                     if (kvp.Value.IsFrozen) {
                         button.Text += " (FROZEN)";
@@ -846,6 +893,7 @@ namespace meph {
                 var noCardsLabel = new Label();
                 noCardsLabel.Text = "No equipped cards available to use.";
                 noCardsLabel.HorizontalAlignment = HorizontalAlignment.Center;
+                noCardsLabel.AddThemeFontSizeOverride("font_size", 14);
                 vbox.AddChild(noCardsLabel);
             }
 
@@ -869,7 +917,7 @@ namespace meph {
         private void OnTurnStarted(Character character) {
             UpdatePlayerResources(character);
             UpdateActionButtons();
-            UpdateCurrentTurnDisplay(); // This will now show the correct actions
+            UpdateCurrentTurnDisplay();
             
             // Refresh card/charm availability in Flexible Mode
             if (GameManager.Instance.IsFlexibleMode()) {
@@ -918,32 +966,50 @@ namespace meph {
 
             var damageLabel = new Label();
             damageLabel.Text = $"-{damage}";
-            damageLabel.Modulate = Colors.Red;
             damageLabel.AddThemeColorOverride("font_color", Colors.Red);
-            damageLabel.AddThemeStyleboxOverride("normal", new StyleBoxFlat());
+            damageLabel.AddThemeFontSizeOverride("font_size", 20);
             
-            // Position near the health bar
-            var barGlobalPos = targetLPBar.GlobalPosition;
-            var barSize = targetLPBar.Size;
+            // Create a background for better visibility
+            var background = new StyleBoxFlat();
+            background.BgColor = Colors.Black;
+            background.BgColor = new Color(0, 0, 0, 0.7f);
+            background.BorderWidthLeft = 2;
+            background.BorderWidthRight = 2;
+            background.BorderWidthTop = 2;
+            background.BorderWidthBottom = 2;
+            background.BorderColor = Colors.Red;
+            damageLabel.AddThemeStyleboxOverride("normal", background);
             
-            damageLabel.Position = new Vector2(
-                barGlobalPos.X + barSize.X / 2 - 25,
-                barGlobalPos.Y - 30
-            );
+            // Use CallDeferred to ensure the bar is properly positioned first
+            CallDeferred(nameof(PositionDamageIndicator), damageLabel, targetLPBar);
             
             AddChild(damageLabel);
 
             // Animate damage indicator
             var tween = CreateTween();
             tween.SetParallel(true);
-            tween.TweenProperty(damageLabel, "modulate:a", 0.0f, 1.5f);
-            tween.TweenProperty(damageLabel, "position:y", damageLabel.Position.Y - 60, 1.5f);
+            tween.TweenProperty(damageLabel, "modulate:a", 0.0f, 2.0f);
+            tween.TweenProperty(damageLabel, "position:y", damageLabel.Position.Y - 80, 2.0f);
             tween.TweenCallback(Callable.From(() => damageLabel.QueueFree()));
+        }
+
+        private void PositionDamageIndicator(Label damageLabel, ProgressBar targetBar) {
+            if (targetBar == null || damageLabel == null) return;
+            
+            // Get the global position of the health bar
+            var barGlobalPos = targetBar.GlobalPosition;
+            var barSize = targetBar.Size;
+            
+            // Position the damage indicator above and centered on the health bar
+            damageLabel.Position = new Vector2(
+                barGlobalPos.X + (barSize.X / 2) - 30, // Center horizontally
+                barGlobalPos.Y - 40 // Position above the bar
+            );
         }
 
         private void OnActionsChanged(int remaining) {
             UpdateActionButtons();
-            UpdateCurrentTurnDisplay(); // Force immediate display update
+            UpdateCurrentTurnDisplay();
             
             // Refresh equipment options in Flexible Mode
             if (GameManager.Instance.IsFlexibleMode()) {
@@ -951,7 +1017,7 @@ namespace meph {
                 PopulateAvailableCharms();
             }
             
-            ConsoleLog.Info($"Actions updated: {remaining} remaining"); // Debug log
+            ConsoleLog.Info($"Actions updated: {remaining} remaining");
         }
 
         private void OnPlayerVictory(Character winner) {
@@ -966,10 +1032,12 @@ namespace meph {
             var victoryPopup = new AcceptDialog();
             victoryPopup.Title = "GAME OVER";
             victoryPopup.DialogText = $"{winner.CharName} WINS!";
-            victoryPopup.Size = new Vector2I(300, 150);
+            victoryPopup.Size = new Vector2I(400, 200);
             
             var restartButton = new Button();
             restartButton.Text = "RESTART GAME";
+            restartButton.CustomMinimumSize = new Vector2(150, 50);
+            restartButton.AddThemeFontSizeOverride("font_size", 14);
             restartButton.Pressed += () => {
                 RestartGame();
                 victoryPopup.QueueFree();
@@ -1008,32 +1076,38 @@ namespace meph {
         // Update Methods
         private void UpdatePlayerResources(Character character) {
             if (character == GameManager.Instance.Attacker) {
-                // Update LP
-                player1LPBar.Value = (float)character.LP / character.MaxLP * 100;
+                // Update LP with proper max values
+                player1LPBar.MaxValue = character.MaxLP;
+                player1LPBar.Value = character.LP;
                 player1LPLabel.Text = $"{character.LP}/{character.MaxLP}";
                 
-                // Update EP
-                player1EPBar.Value = (float)character.EP / character.MaxEP * 100;
+                // Update EP with proper max values
+                player1EPBar.MaxValue = character.MaxEP;
+                player1EPBar.Value = character.EP;
                 player1EPLabel.Text = $"{character.EP}/{character.MaxEP}";
                 
-                // Update MP
-                player1MPBar.Value = (float)character.MP / character.MaxMP * 100;
+                // Update MP with proper max values
+                player1MPBar.MaxValue = character.MaxMP;
+                player1MPBar.Value = character.MP;
                 player1MPLabel.Text = $"{character.MP}/{character.MaxMP}";
                 
                 // Update UP
                 player1UPLabel.Text = $"UP: {character.UP}/{character.MaxUP}";
                 
             } else if (character == GameManager.Instance.Defender) {
-                // Update LP
-                player2LPBar.Value = (float)character.LP / character.MaxLP * 100;
+                // Update LP with proper max values
+                player2LPBar.MaxValue = character.MaxLP;
+                player2LPBar.Value = character.LP;
                 player2LPLabel.Text = $"{character.LP}/{character.MaxLP}";
                 
-                // Update EP
-                player2EPBar.Value = (float)character.EP / character.MaxEP * 100;
+                // Update EP with proper max values
+                player2EPBar.MaxValue = character.MaxEP;
+                player2EPBar.Value = character.EP;
                 player2EPLabel.Text = $"{character.EP}/{character.MaxEP}";
                 
-                // Update MP
-                player2MPBar.Value = (float)character.MP / character.MaxMP * 100;
+                // Update MP with proper max values
+                player2MPBar.MaxValue = character.MaxMP;
+                player2MPBar.Value = character.MP;
                 player2MPLabel.Text = $"{character.MP}/{character.MaxMP}";
                 
                 // Update UP
@@ -1049,10 +1123,10 @@ namespace meph {
                 // In Flexible Mode, show actions remaining
                 if (GameManager.Instance.IsFlexibleMode()) {
                     int actionsRemaining = GameManager.Instance.StateManager?.ActionsRemaining ?? 0;
-                    actionsText = $" (Actions: {actionsRemaining})";
+                    actionsText = $"\n(Actions: {actionsRemaining})";
                 }
                 
-                currentTurnLabel.Text = $"CURRENT TURN: {currentPlayer.CharName}{actionsText}";
+                currentTurnLabel.Text = $"CURRENT TURN:\n{currentPlayer.CharName}{actionsText}";
                 currentTurnLabel.Modulate = currentPlayer == GameManager.Instance.Attacker ? Colors.Yellow : Colors.Cyan;
             }
         }
@@ -1082,28 +1156,74 @@ namespace meph {
                 child.QueueFree();
             }
 
-            // Show equipped cards with better formatting
-            foreach (var kvp in character.EquippedSlots) {
-                if (kvp.Value != null) {
+            // Define card type order for better organization
+            var cardTypeOrder = new[] { 
+                Card.TYPE.C,    // Character card
+                Card.TYPE.BW,   // Basic Weapon
+                Card.TYPE.SW,   // Special Weapon  
+                Card.TYPE.W,    // Weapon
+                Card.TYPE.E,    // Equipment
+                Card.TYPE.P,    // Potion
+                Card.TYPE.Q,    // Quin cards
+                Card.TYPE.U     // Ultimate cards
+            };
+
+            // Show equipped cards organized by type
+            foreach (var cardType in cardTypeOrder) {
+                if (character.EquippedSlots.ContainsKey(cardType) && character.EquippedSlots[cardType] != null) {
+                    var card = character.EquippedSlots[cardType];
                     var cardPanel = new Panel();
-                    cardPanel.CustomMinimumSize = new Vector2(0, 40);
+                    cardPanel.CustomMinimumSize = new Vector2(0, 50); // Larger card panels
                     
                     var cardLabel = new Label();
-                    cardLabel.Text = $"{kvp.Key}: {kvp.Value.Name}";
+                    cardLabel.Text = $"[{cardType}] {card.Name}";
                     cardLabel.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+                    cardLabel.AddThemeFontSizeOverride("font_size", 12);
                     cardLabel.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
-                    cardLabel.OffsetLeft = 5;
-                    cardLabel.OffsetRight = -5;
-                    cardLabel.OffsetTop = 5;
-                    cardLabel.OffsetBottom = -5;
+                    cardLabel.OffsetLeft = 8;
+                    cardLabel.OffsetRight = -8;
+                    cardLabel.OffsetTop = 8;
+                    cardLabel.OffsetBottom = -8;
                     
-                    if (kvp.Value.IsFrozen) {
+                    // Color coding for card status
+                    if (card.IsFrozen) {
                         cardPanel.Modulate = Colors.LightBlue;
                         cardLabel.Text += " (FROZEN)";
                         cardLabel.AddThemeColorOverride("font_color", Colors.Blue);
                     } else {
-                        cardPanel.Modulate = Colors.White;
-                        cardLabel.AddThemeColorOverride("font_color", Colors.Black);
+                        // Color by card type
+                        switch (cardType) {
+                            case Card.TYPE.C:
+                                cardPanel.Modulate = Colors.Gold;
+                                cardLabel.AddThemeColorOverride("font_color", Colors.Black);
+                                break;
+                            case Card.TYPE.BW:
+                            case Card.TYPE.SW:
+                            case Card.TYPE.W:
+                                cardPanel.Modulate = Colors.Orange;
+                                cardLabel.AddThemeColorOverride("font_color", Colors.Black);
+                                break;
+                            case Card.TYPE.E:
+                                cardPanel.Modulate = Colors.Green;
+                                cardLabel.AddThemeColorOverride("font_color", Colors.Black);
+                                break;
+                            case Card.TYPE.P:
+                                cardPanel.Modulate = Colors.Purple;
+                                cardLabel.AddThemeColorOverride("font_color", Colors.White);
+                                break;
+                            case Card.TYPE.Q:
+                                cardPanel.Modulate = Colors.Cyan;
+                                cardLabel.AddThemeColorOverride("font_color", Colors.Black);
+                                break;
+                            case Card.TYPE.U:
+                                cardPanel.Modulate = Colors.Red;
+                                cardLabel.AddThemeColorOverride("font_color", Colors.White);
+                                break;
+                            default:
+                                cardPanel.Modulate = Colors.White;
+                                cardLabel.AddThemeColorOverride("font_color", Colors.Black);
+                                break;
+                        }
                     }
                     
                     cardPanel.AddChild(cardLabel);
@@ -1111,50 +1231,50 @@ namespace meph {
                 }
             }
 
-            // Show equipped charms with better formatting
-            foreach (var kvp in character.EquippedCharms) {
-                if (kvp.Value != null) {
-                    var charmPanel = new Panel();
-                    charmPanel.CustomMinimumSize = new Vector2(0, 30);
-                    
-                    var charmLabel = new Label();
-                    charmLabel.Text = $"{kvp.Key}: {kvp.Value.Name}";
-                    charmLabel.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-                    charmLabel.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
-                    charmLabel.OffsetLeft = 5;
-                    charmLabel.OffsetRight = -5;
-                    charmLabel.OffsetTop = 5;
-                    charmLabel.OffsetBottom = -5;
-                    charmLabel.AddThemeColorOverride("font_color", Colors.Cyan);
-                    
-                    charmPanel.Modulate = Colors.DarkCyan;
-                    charmPanel.AddChild(charmLabel);
-                    charmsContainer.AddChild(charmPanel);
-                }
-            }
-
             // Show empty slots in Flexible Mode
             if (GameManager.Instance.IsFlexibleMode()) {
-                // Show empty card slots
-                var allSlotTypes = new[] { Card.TYPE.BW, Card.TYPE.SW, Card.TYPE.E, Card.TYPE.W, Card.TYPE.Q, Card.TYPE.P, Card.TYPE.U };
-                foreach (var slotType in allSlotTypes) {
+                foreach (var slotType in cardTypeOrder) {
                     if (!character.EquippedSlots.ContainsKey(slotType) || character.EquippedSlots[slotType] == null) {
                         var emptyPanel = new Panel();
-                        emptyPanel.CustomMinimumSize = new Vector2(0, 30);
+                        emptyPanel.CustomMinimumSize = new Vector2(0, 40);
                         emptyPanel.Modulate = Colors.Gray;
                         
                         var emptyLabel = new Label();
-                        emptyLabel.Text = $"{slotType}: [EMPTY]";
+                        emptyLabel.Text = $"[{slotType}] [EMPTY SLOT]";
+                        emptyLabel.AddThemeFontSizeOverride("font_size", 12);
                         emptyLabel.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
-                        emptyLabel.OffsetLeft = 5;
-                        emptyLabel.OffsetRight = -5;
-                        emptyLabel.OffsetTop = 5;
-                        emptyLabel.OffsetBottom = -5;
+                        emptyLabel.OffsetLeft = 8;
+                        emptyLabel.OffsetRight = -8;
+                        emptyLabel.OffsetTop = 8;
+                        emptyLabel.OffsetBottom = -8;
                         emptyLabel.AddThemeColorOverride("font_color", Colors.LightGray);
                         
                         emptyPanel.AddChild(emptyLabel);
                         equipmentContainer.AddChild(emptyPanel);
                     }
+                }
+            }
+
+            // Show equipped charms with better formatting
+            foreach (var kvp in character.EquippedCharms) {
+                if (kvp.Value != null) {
+                    var charmPanel = new Panel();
+                    charmPanel.CustomMinimumSize = new Vector2(0, 40);
+                    
+                    var charmLabel = new Label();
+                    charmLabel.Text = $"[{kvp.Key}] {kvp.Value.Name}";
+                    charmLabel.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+                    charmLabel.AddThemeFontSizeOverride("font_size", 12);
+                    charmLabel.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+                    charmLabel.OffsetLeft = 8;
+                    charmLabel.OffsetRight = -8;
+                    charmLabel.OffsetTop = 8;
+                    charmLabel.OffsetBottom = -8;
+                    charmLabel.AddThemeColorOverride("font_color", Colors.Cyan);
+                    
+                    charmPanel.Modulate = Colors.DarkCyan;
+                    charmPanel.AddChild(charmLabel);
+                    charmsContainer.AddChild(charmPanel);
                 }
             }
         }
