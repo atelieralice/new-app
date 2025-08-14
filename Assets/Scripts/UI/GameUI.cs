@@ -28,10 +28,25 @@ namespace meph {
         // Game Play UI
         private Label player1NameLabel;
         private Label player2NameLabel;
+        
+        // Resource Bars
         private ProgressBar player1LPBar;
         private ProgressBar player2LPBar;
-        private Label player1ResourcesLabel;
-        private Label player2ResourcesLabel;
+        private ProgressBar player1EPBar;
+        private ProgressBar player2EPBar;
+        private ProgressBar player1MPBar;
+        private ProgressBar player2MPBar;
+        
+        // Resource Labels
+        private Label player1LPLabel;
+        private Label player2LPLabel;
+        private Label player1EPLabel;
+        private Label player2EPLabel;
+        private Label player1MPLabel;
+        private Label player2MPLabel;
+        private Label player1UPLabel;
+        private Label player2UPLabel;
+        
         private Button endTurnButton;
         private Button normalAttackButton;
         private Button useCardButton;
@@ -39,15 +54,14 @@ namespace meph {
         private Label gameModeLabel;
 
         // Equipment Display
-        private GridContainer player1EquipmentContainer;
-        private GridContainer player2EquipmentContainer;
-        private GridContainer player1CharmsContainer;
-        private GridContainer player2CharmsContainer;
+        private VBoxContainer player1EquipmentContainer;
+        private VBoxContainer player2EquipmentContainer;
+        private VBoxContainer player1CharmsContainer;
+        private VBoxContainer player2CharmsContainer;
 
         // Current State
         private Character selectedPlayer1;
         private Character selectedPlayer2;
-        private Character currentPlayerForEquipment;
 
         public override void _Ready() {
             CreateUIStructure();
@@ -57,7 +71,7 @@ namespace meph {
 
         private void CreateUIStructure() {
             // Set main container properties
-            SetAnchorsAndOffsetsToFullRect(this);
+            this.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
             
             // Create main panels
             CreateModeSelectionPanel();
@@ -67,19 +81,15 @@ namespace meph {
             CreateCharmSelectionPanel();
         }
 
-        private void SetAnchorsAndOffsetsToFullRect(Control control) {
-            control.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
-        }
-
         private void CreateModeSelectionPanel() {
             modeSelectionPanel = new Control();
             modeSelectionPanel.Name = "ModeSelectionPanel";
-            SetAnchorsAndOffsetsToFullRect(modeSelectionPanel);
+            modeSelectionPanel.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
             AddChild(modeSelectionPanel);
 
             // Main container for mode selection
             var mainVBox = new VBoxContainer();
-            SetAnchorsAndOffsetsToFullRect(mainVBox);
+            mainVBox.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
             modeSelectionPanel.AddChild(mainVBox);
 
             // Title
@@ -124,13 +134,13 @@ namespace meph {
         private void CreateCharacterSelectionPanel() {
             characterSelectionPanel = new Control();
             characterSelectionPanel.Name = "CharacterSelectionPanel";
-            SetAnchorsAndOffsetsToFullRect(characterSelectionPanel);
+            characterSelectionPanel.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
             characterSelectionPanel.Visible = false;
             AddChild(characterSelectionPanel);
 
             // Main container for character selection
             var mainVBox = new VBoxContainer();
-            SetAnchorsAndOffsetsToFullRect(mainVBox);
+            mainVBox.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
             characterSelectionPanel.AddChild(mainVBox);
 
             // Title
@@ -201,13 +211,13 @@ namespace meph {
         private void CreateGamePlayPanel() {
             gamePlayPanel = new Control();
             gamePlayPanel.Name = "GamePlayPanel";
-            SetAnchorsAndOffsetsToFullRect(gamePlayPanel);
+            gamePlayPanel.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
             gamePlayPanel.Visible = false;
             AddChild(gamePlayPanel);
 
             // Main container
             var mainVBox = new VBoxContainer();
-            SetAnchorsAndOffsetsToFullRect(mainVBox);
+            mainVBox.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
             gamePlayPanel.AddChild(mainVBox);
 
             // Game mode indicator
@@ -235,13 +245,14 @@ namespace meph {
         private void CreatePlayerInfoPanel(HBoxContainer parent, bool isPlayer1) {
             var playerVBox = new VBoxContainer();
             playerVBox.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-            playerVBox.CustomMinimumSize = new Vector2(250, 0);
+            playerVBox.CustomMinimumSize = new Vector2(300, 0);
             parent.AddChild(playerVBox);
 
-            // Player name
+            // Player name (initially hidden)
             var nameLabel = new Label();
             nameLabel.Text = isPlayer1 ? "PLAYER 1" : "PLAYER 2";
             nameLabel.HorizontalAlignment = HorizontalAlignment.Center;
+            nameLabel.Visible = false; // Hide until character is set
             playerVBox.AddChild(nameLabel);
 
             if (isPlayer1) {
@@ -250,72 +261,166 @@ namespace meph {
                 player2NameLabel = nameLabel;
             }
 
-            // LP Bar
+            // Resource bars container
+            var resourcesVBox = new VBoxContainer();
+            resourcesVBox.Visible = false; // Hide until character is set
+            playerVBox.AddChild(resourcesVBox);
+
+            // LP (Health) Section
+            var lpHBox = new HBoxContainer();
+            resourcesVBox.AddChild(lpHBox);
+
+            var lpLabel = new Label();
+            lpLabel.Text = "LP: ";
+            lpLabel.CustomMinimumSize = new Vector2(40, 0);
+            lpHBox.AddChild(lpLabel);
+
             var lpBar = new ProgressBar();
             lpBar.ShowPercentage = false;
-            lpBar.CustomMinimumSize = new Vector2(0, 30);
-            playerVBox.AddChild(lpBar);
+            lpBar.CustomMinimumSize = new Vector2(200, 25);
+            lpBar.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+            lpBar.AddThemeColorOverride("fill", Colors.Red);
+            lpHBox.AddChild(lpBar);
 
+            var lpValueLabel = new Label();
+            lpValueLabel.Text = "0/0";
+            lpValueLabel.CustomMinimumSize = new Vector2(80, 0);
+            lpHBox.AddChild(lpValueLabel);
+
+            // EP (Energy) Section
+            var epHBox = new HBoxContainer();
+            resourcesVBox.AddChild(epHBox);
+
+            var epLabel = new Label();
+            epLabel.Text = "EP: ";
+            epLabel.CustomMinimumSize = new Vector2(40, 0);
+            epHBox.AddChild(epLabel);
+
+            var epBar = new ProgressBar();
+            epBar.ShowPercentage = false;
+            epBar.CustomMinimumSize = new Vector2(200, 20);
+            epBar.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+            epBar.AddThemeColorOverride("fill", Colors.Orange);
+            epHBox.AddChild(epBar);
+
+            var epValueLabel = new Label();
+            epValueLabel.Text = "0/0";
+            epValueLabel.CustomMinimumSize = new Vector2(80, 0);
+            epHBox.AddChild(epValueLabel);
+
+            // MP (Mana) Section
+            var mpHBox = new HBoxContainer();
+            resourcesVBox.AddChild(mpHBox);
+
+            var mpLabel = new Label();
+            mpLabel.Text = "MP: ";
+            mpLabel.CustomMinimumSize = new Vector2(40, 0);
+            mpHBox.AddChild(mpLabel);
+
+            var mpBar = new ProgressBar();
+            mpBar.ShowPercentage = false;
+            mpBar.CustomMinimumSize = new Vector2(200, 20);
+            mpBar.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+            mpBar.AddThemeColorOverride("fill", Colors.Blue);
+            mpHBox.AddChild(mpBar);
+
+            var mpValueLabel = new Label();
+            mpValueLabel.Text = "0/0";
+            mpValueLabel.CustomMinimumSize = new Vector2(80, 0);
+            mpHBox.AddChild(mpValueLabel);
+
+            // UP (Ultimate) Section
+            var upLabel = new Label();
+            upLabel.Text = "UP: 0/0";
+            upLabel.AddThemeColorOverride("font_color", Colors.Gold);
+            resourcesVBox.AddChild(upLabel);
+
+            // Store references
             if (isPlayer1) {
                 player1LPBar = lpBar;
+                player1EPBar = epBar;
+                player1MPBar = mpBar;
+                player1LPLabel = lpValueLabel;
+                player1EPLabel = epValueLabel;
+                player1MPLabel = mpValueLabel;
+                player1UPLabel = upLabel;
             } else {
                 player2LPBar = lpBar;
+                player2EPBar = epBar;
+                player2MPBar = mpBar;
+                player2LPLabel = lpValueLabel;
+                player2EPLabel = epValueLabel;
+                player2MPLabel = mpValueLabel;
+                player2UPLabel = upLabel;
             }
 
-            // Resources label
-            var resourcesLabel = new Label();
-            resourcesLabel.Text = "LP: 0/0\nEP: 0/0\nMP: 0/0\nUP: 0/0";
-            resourcesLabel.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-            playerVBox.AddChild(resourcesLabel);
+            // Equipment section (initially hidden)
+            var equipmentSection = new VBoxContainer();
+            equipmentSection.Visible = false;
+            playerVBox.AddChild(equipmentSection);
 
-            if (isPlayer1) {
-                player1ResourcesLabel = resourcesLabel;
-            } else {
-                player2ResourcesLabel = resourcesLabel;
-            }
-
-            // Equipment section
             var equipmentLabel = new Label();
             equipmentLabel.Text = "EQUIPMENT:";
-            playerVBox.AddChild(equipmentLabel);
+            equipmentLabel.AddThemeColorOverride("font_color", Colors.Yellow);
+            equipmentSection.AddChild(equipmentLabel);
 
-            var equipmentContainer = new GridContainer();
-            equipmentContainer.Columns = 2;
-            equipmentContainer.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-            playerVBox.AddChild(equipmentContainer);
+            var equipmentScrollContainer = new ScrollContainer();
+            equipmentScrollContainer.CustomMinimumSize = new Vector2(0, 150);
+            equipmentScrollContainer.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
+            equipmentSection.AddChild(equipmentScrollContainer);
+
+            var equipmentContainer = new VBoxContainer();
+            equipmentScrollContainer.AddChild(equipmentContainer);
+
+            // Charms section (initially hidden)
+            var charmsLabel = new Label();
+            charmsLabel.Text = "CHARMS:";
+            charmsLabel.AddThemeColorOverride("font_color", Colors.Cyan);
+            equipmentSection.AddChild(charmsLabel);
+
+            var charmsScrollContainer = new ScrollContainer();
+            charmsScrollContainer.CustomMinimumSize = new Vector2(0, 100);
+            charmsScrollContainer.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
+            equipmentSection.AddChild(charmsScrollContainer);
+
+            var charmsContainer = new VBoxContainer();
+            charmsScrollContainer.AddChild(charmsContainer);
 
             if (isPlayer1) {
                 player1EquipmentContainer = equipmentContainer;
-            } else {
-                player2EquipmentContainer = equipmentContainer;
-            }
-
-            // Charms section
-            var charmsLabel = new Label();
-            charmsLabel.Text = "CHARMS:";
-            playerVBox.AddChild(charmsLabel);
-
-            var charmsContainer = new GridContainer();
-            charmsContainer.Columns = 2;
-            charmsContainer.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-            playerVBox.AddChild(charmsContainer);
-
-            if (isPlayer1) {
                 player1CharmsContainer = charmsContainer;
             } else {
+                player2EquipmentContainer = equipmentContainer;
                 player2CharmsContainer = charmsContainer;
+            }
+
+            // Show equipment section when character is set
+            if (isPlayer1) {
+                player1NameLabel.VisibilityChanged += () => {
+                    if (player1NameLabel.Visible) {
+                        resourcesVBox.Visible = true;
+                        equipmentSection.Visible = true;
+                    }
+                };
+            } else {
+                player2NameLabel.VisibilityChanged += () => {
+                    if (player2NameLabel.Visible) {
+                        resourcesVBox.Visible = true;
+                        equipmentSection.Visible = true;
+                    }
+                };
             }
         }
 
         private void CreateActionPanel(HBoxContainer parent) {
             var actionVBox = new VBoxContainer();
             actionVBox.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-            actionVBox.CustomMinimumSize = new Vector2(200, 0);
+            actionVBox.CustomMinimumSize = new Vector2(250, 0);
             parent.AddChild(actionVBox);
 
             // Current turn indicator
             currentTurnLabel = new Label();
-            currentTurnLabel.Text = "CURRENT TURN: PLAYER 1";
+            currentTurnLabel.Text = "WAITING FOR GAME TO START";
             currentTurnLabel.HorizontalAlignment = HorizontalAlignment.Center;
             actionVBox.AddChild(currentTurnLabel);
 
@@ -329,18 +434,21 @@ namespace meph {
             normalAttackButton.Text = "NORMAL ATTACK";
             normalAttackButton.CustomMinimumSize = new Vector2(0, 40);
             normalAttackButton.Pressed += OnNormalAttackPressed;
+            normalAttackButton.Disabled = true;
             actionVBox.AddChild(normalAttackButton);
 
             useCardButton = new Button();
             useCardButton.Text = "USE EQUIPPED CARDS";
             useCardButton.CustomMinimumSize = new Vector2(0, 40);
             useCardButton.Pressed += OnUseCardPressed;
+            useCardButton.Disabled = true;
             actionVBox.AddChild(useCardButton);
 
             endTurnButton = new Button();
             endTurnButton.Text = "END TURN";
             endTurnButton.CustomMinimumSize = new Vector2(0, 40);
             endTurnButton.Pressed += OnEndTurnPressed;
+            endTurnButton.Disabled = true;
             actionVBox.AddChild(endTurnButton);
         }
 
@@ -348,16 +456,18 @@ namespace meph {
             cardSelectionPanel = new Control();
             cardSelectionPanel.Name = "CardSelectionPanel";
             cardSelectionPanel.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.BottomWide);
+            cardSelectionPanel.OffsetTop = -200; // Take bottom 200px
             cardSelectionPanel.Visible = false;
             AddChild(cardSelectionPanel);
 
             var cardVBox = new VBoxContainer();
-            SetAnchorsAndOffsetsToFullRect(cardVBox);
+            cardVBox.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
             cardSelectionPanel.AddChild(cardVBox);
 
             var cardLabel = new Label();
             cardLabel.Text = "AVAILABLE CARDS";
             cardLabel.HorizontalAlignment = HorizontalAlignment.Center;
+            cardLabel.AddThemeColorOverride("font_color", Colors.White);
             cardVBox.AddChild(cardLabel);
 
             var cardScrollContainer = new ScrollContainer();
@@ -365,7 +475,7 @@ namespace meph {
             cardVBox.AddChild(cardScrollContainer);
 
             availableCardsContainer = new GridContainer();
-            availableCardsContainer.Columns = 4;
+            availableCardsContainer.Columns = 5;
             cardScrollContainer.AddChild(availableCardsContainer);
         }
 
@@ -373,16 +483,18 @@ namespace meph {
             charmSelectionPanel = new Control();
             charmSelectionPanel.Name = "CharmSelectionPanel";
             charmSelectionPanel.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.RightWide);
+            charmSelectionPanel.OffsetLeft = -250; // Take right 250px
             charmSelectionPanel.Visible = false;
             AddChild(charmSelectionPanel);
 
             var charmVBox = new VBoxContainer();
-            SetAnchorsAndOffsetsToFullRect(charmVBox);
+            charmVBox.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
             charmSelectionPanel.AddChild(charmVBox);
 
             var charmLabel = new Label();
             charmLabel.Text = "CHARMS";
             charmLabel.HorizontalAlignment = HorizontalAlignment.Center;
+            charmLabel.AddThemeColorOverride("font_color", Colors.White);
             charmVBox.AddChild(charmLabel);
 
             var charmScrollContainer = new ScrollContainer();
@@ -460,12 +572,10 @@ namespace meph {
             if (player == 1) {
                 selectedPlayer1 = character;
                 ConsoleLog.Info($"Player 1 selected: {character.CharName}");
-                // Update visual feedback
                 UpdateCharacterSelectionFeedback(player1CharacterContainer, data.charName);
             } else {
                 selectedPlayer2 = character;
                 ConsoleLog.Info($"Player 2 selected: {character.CharName}");
-                // Update visual feedback
                 UpdateCharacterSelectionFeedback(player2CharacterContainer, data.charName);
             }
 
@@ -528,14 +638,14 @@ namespace meph {
         }
 
         private void EquipRokBasicCards(Character character) {
-            var rokCards = AllCards.GetCharacterCardSet("Rok").Skip(1).ToList(); // Skip character card
+            var rokCards = AllCards.GetCharacterCardSet("Rok").Skip(1).ToList();
             foreach (var card in rokCards) {
                 CharacterLogic.EquipCardToSlot(character, card);
             }
         }
 
         private void EquipYuBasicCards(Character character) {
-            var yuCards = AllCards.GetCharacterCardSet("Yu").Skip(1).ToList(); // Skip character card
+            var yuCards = AllCards.GetCharacterCardSet("Yu").Skip(1).ToList();
             foreach (var card in yuCards) {
                 CharacterLogic.EquipCardToSlot(character, card);
             }
@@ -556,8 +666,12 @@ namespace meph {
 
         private void SetupGamePlayUI() {
             if (GameManager.Instance.Attacker != null && GameManager.Instance.Defender != null) {
+                // Show character names and make UI visible
                 player1NameLabel.Text = $"PLAYER 1: {GameManager.Instance.Attacker.CharName}";
+                player1NameLabel.Visible = true;
+                
                 player2NameLabel.Text = $"PLAYER 2: {GameManager.Instance.Defender.CharName}";
+                player2NameLabel.Visible = true;
 
                 // Update game mode display
                 string modeText = GameManager.Instance.IsCharacterBattleMode() ? 
@@ -572,7 +686,10 @@ namespace meph {
 
                 UpdatePlayerResources(GameManager.Instance.Attacker);
                 UpdatePlayerResources(GameManager.Instance.Defender);
-                UpdateEquipmentDisplay();
+                
+                // Force equipment display update after a short delay
+                CallDeferred(nameof(UpdateEquipmentDisplay));
+                
                 UpdateCurrentTurnDisplay();
             }
         }
@@ -606,7 +723,7 @@ namespace meph {
             var currentPlayer = GameManager.Instance.GetCurrentPlayer();
             
             button.Text = $"{card.Name}\n{card.Type}\n{GetShortDescription(card.Description)}";
-            button.CustomMinimumSize = new Vector2(180, 100);
+            button.CustomMinimumSize = new Vector2(160, 90);
             button.AutowrapMode = TextServer.AutowrapMode.WordSmart;
             
             // Check if current player can equip this card (Q/U restrictions)
@@ -631,7 +748,7 @@ namespace meph {
         private Button CreateCharmButton(Charm charm) {
             var button = new Button();
             button.Text = $"{charm.Name}\n{charm.Slot}";
-            button.CustomMinimumSize = new Vector2(180, 80);
+            button.CustomMinimumSize = new Vector2(200, 70);
             button.AutowrapMode = TextServer.AutowrapMode.WordSmart;
             button.Pressed += () => OnCharmSelected(charm);
             
@@ -645,7 +762,7 @@ namespace meph {
 
         private string GetShortDescription(string description) {
             if (string.IsNullOrEmpty(description)) return "";
-            return description.Length > 50 ? description.Substring(0, 47) + "..." : description;
+            return description.Length > 40 ? description.Substring(0, 37) + "..." : description;
         }
 
         private void OnCardSelected(Card card) {
@@ -689,20 +806,22 @@ namespace meph {
             var currentPlayer = GameManager.Instance.GetCurrentPlayer();
             if (currentPlayer == null) return;
 
-            // Create a popup with equipped cards
             ShowEquippedCardsPopup(currentPlayer);
         }
 
         private void ShowEquippedCardsPopup(Character character) {
             var popup = new AcceptDialog();
             popup.Title = $"Use {character.CharName}'s Cards";
-            popup.Size = new Vector2I(400, 300);
+            popup.Size = new Vector2I(450, 350);
 
             var vbox = new VBoxContainer();
             popup.AddChild(vbox);
 
+            bool hasUsableCards = false;
+
             foreach (var kvp in character.EquippedSlots) {
-                if (kvp.Value != null && kvp.Key != Card.TYPE.C) { // Don't show character cards
+                if (kvp.Value != null && kvp.Key != Card.TYPE.C) {
+                    hasUsableCards = true;
                     var button = new Button();
                     button.Text = $"Use {kvp.Value.Name} ({kvp.Key})";
                     
@@ -721,6 +840,13 @@ namespace meph {
                     
                     vbox.AddChild(button);
                 }
+            }
+
+            if (!hasUsableCards) {
+                var noCardsLabel = new Label();
+                noCardsLabel.Text = "No equipped cards available to use.";
+                noCardsLabel.HorizontalAlignment = HorizontalAlignment.Center;
+                vbox.AddChild(noCardsLabel);
             }
 
             GetViewport().AddChild(popup);
@@ -759,7 +885,7 @@ namespace meph {
         private void OnCardEquipped(Character character, Card card) {
             UpdateEquipmentDisplay();
             
-            // Refresh available cards in Flexible Mode to show action cost
+            // Refresh available cards in Flexible Mode
             if (GameManager.Instance.IsFlexibleMode()) {
                 PopulateAvailableCards();
             }
@@ -776,22 +902,42 @@ namespace meph {
 
         private void OnDamageDealt(Character target, int damage, int remainingLP) {
             UpdatePlayerResources(target);
-            
-            // Create damage indicator
             ShowDamageIndicator(target, damage);
         }
 
         private void ShowDamageIndicator(Character target, int damage) {
+            // Determine which health bar to align with
+            ProgressBar targetLPBar = null;
+            if (target == GameManager.Instance.Attacker) {
+                targetLPBar = player1LPBar;
+            } else if (target == GameManager.Instance.Defender) {
+                targetLPBar = player2LPBar;
+            }
+
+            if (targetLPBar == null) return;
+
             var damageLabel = new Label();
             damageLabel.Text = $"-{damage}";
             damageLabel.Modulate = Colors.Red;
-            damageLabel.Position = new Vector2(GD.RandRange(100, 300), GD.RandRange(100, 200));
+            damageLabel.AddThemeColorOverride("font_color", Colors.Red);
+            damageLabel.AddThemeStyleboxOverride("normal", new StyleBoxFlat());
+            
+            // Position near the health bar
+            var barGlobalPos = targetLPBar.GlobalPosition;
+            var barSize = targetLPBar.Size;
+            
+            damageLabel.Position = new Vector2(
+                barGlobalPos.X + barSize.X / 2 - 25,
+                barGlobalPos.Y - 30
+            );
+            
             AddChild(damageLabel);
 
-            // Animate and remove
+            // Animate damage indicator
             var tween = CreateTween();
-            tween.TweenProperty(damageLabel, "modulate:a", 0.0f, 1.0f);
-            tween.TweenProperty(damageLabel, "position:y", damageLabel.Position.Y - 50, 1.0f);
+            tween.SetParallel(true);
+            tween.TweenProperty(damageLabel, "modulate:a", 0.0f, 1.5f);
+            tween.TweenProperty(damageLabel, "position:y", damageLabel.Position.Y - 60, 1.5f);
             tween.TweenCallback(Callable.From(() => damageLabel.QueueFree()));
         }
 
@@ -836,6 +982,10 @@ namespace meph {
             selectedPlayer1 = null;
             selectedPlayer2 = null;
             
+            // Hide character UI elements
+            player1NameLabel.Visible = false;
+            player2NameLabel.Visible = false;
+            
             // Clear character containers
             foreach (Node child in player1CharacterContainer.GetChildren()) {
                 child.QueueFree();
@@ -855,11 +1005,36 @@ namespace meph {
         // Update Methods
         private void UpdatePlayerResources(Character character) {
             if (character == GameManager.Instance.Attacker) {
+                // Update LP
                 player1LPBar.Value = (float)character.LP / character.MaxLP * 100;
-                player1ResourcesLabel.Text = $"LP: {character.LP}/{character.MaxLP}\nEP: {character.EP}/{character.MaxEP}\nMP: {character.MP}/{character.MaxMP}\nUP: {character.UP}/{character.MaxUP}";
+                player1LPLabel.Text = $"{character.LP}/{character.MaxLP}";
+                
+                // Update EP
+                player1EPBar.Value = (float)character.EP / character.MaxEP * 100;
+                player1EPLabel.Text = $"{character.EP}/{character.MaxEP}";
+                
+                // Update MP
+                player1MPBar.Value = (float)character.MP / character.MaxMP * 100;
+                player1MPLabel.Text = $"{character.MP}/{character.MaxMP}";
+                
+                // Update UP
+                player1UPLabel.Text = $"UP: {character.UP}/{character.MaxUP}";
+                
             } else if (character == GameManager.Instance.Defender) {
+                // Update LP
                 player2LPBar.Value = (float)character.LP / character.MaxLP * 100;
-                player2ResourcesLabel.Text = $"LP: {character.LP}/{character.MaxLP}\nEP: {character.EP}/{character.MaxEP}\nMP: {character.MP}/{character.MaxMP}\nUP: {character.UP}/{character.MaxUP}";
+                player2LPLabel.Text = $"{character.LP}/{character.MaxLP}";
+                
+                // Update EP
+                player2EPBar.Value = (float)character.EP / character.MaxEP * 100;
+                player2EPLabel.Text = $"{character.EP}/{character.MaxEP}";
+                
+                // Update MP
+                player2MPBar.Value = (float)character.MP / character.MaxMP * 100;
+                player2MPLabel.Text = $"{character.MP}/{character.MaxMP}";
+                
+                // Update UP
+                player2UPLabel.Text = $"UP: {character.UP}/{character.MaxUP}";
             }
         }
 
@@ -878,8 +1053,8 @@ namespace meph {
             var gameInProgress = GameManager.Instance.CanPerformActions();
             
             endTurnButton.Disabled = !gameInProgress;
-            normalAttackButton.Disabled = !canAct;
-            useCardButton.Disabled = !canAct;
+            normalAttackButton.Disabled = !canAct || !gameInProgress;
+            useCardButton.Disabled = !canAct || !gameInProgress;
         }
 
         private void UpdateEquipmentDisplay() {
@@ -887,7 +1062,7 @@ namespace meph {
             UpdatePlayerEquipment(GameManager.Instance.Defender, player2EquipmentContainer, player2CharmsContainer);
         }
 
-        private void UpdatePlayerEquipment(Character character, GridContainer equipmentContainer, GridContainer charmsContainer) {
+        private void UpdatePlayerEquipment(Character character, VBoxContainer equipmentContainer, VBoxContainer charmsContainer) {
             if (character == null) return;
 
             // Clear existing displays
@@ -898,28 +1073,79 @@ namespace meph {
                 child.QueueFree();
             }
 
-            // Show equipped cards
+            // Show equipped cards with better formatting
             foreach (var kvp in character.EquippedSlots) {
                 if (kvp.Value != null) {
-                    var label = new Label();
-                    label.Text = $"{kvp.Key}: {kvp.Value.Name}";
-                    label.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+                    var cardPanel = new Panel();
+                    cardPanel.CustomMinimumSize = new Vector2(0, 40);
+                    
+                    var cardLabel = new Label();
+                    cardLabel.Text = $"{kvp.Key}: {kvp.Value.Name}";
+                    cardLabel.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+                    cardLabel.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+                    cardLabel.OffsetLeft = 5;
+                    cardLabel.OffsetRight = -5;
+                    cardLabel.OffsetTop = 5;
+                    cardLabel.OffsetBottom = -5;
                     
                     if (kvp.Value.IsFrozen) {
-                        label.Modulate = Colors.LightBlue;
-                        label.Text += " (FROZEN)";
+                        cardPanel.Modulate = Colors.LightBlue;
+                        cardLabel.Text += " (FROZEN)";
+                        cardLabel.AddThemeColorOverride("font_color", Colors.Blue);
+                    } else {
+                        cardPanel.Modulate = Colors.White;
+                        cardLabel.AddThemeColorOverride("font_color", Colors.Black);
                     }
-                    equipmentContainer.AddChild(label);
+                    
+                    cardPanel.AddChild(cardLabel);
+                    equipmentContainer.AddChild(cardPanel);
                 }
             }
 
-            // Show equipped charms
+            // Show equipped charms with better formatting
             foreach (var kvp in character.EquippedCharms) {
                 if (kvp.Value != null) {
-                    var label = new Label();
-                    label.Text = $"{kvp.Key}: {kvp.Value.Name}";
-                    label.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-                    charmsContainer.AddChild(label);
+                    var charmPanel = new Panel();
+                    charmPanel.CustomMinimumSize = new Vector2(0, 30);
+                    
+                    var charmLabel = new Label();
+                    charmLabel.Text = $"{kvp.Key}: {kvp.Value.Name}";
+                    charmLabel.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+                    charmLabel.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+                    charmLabel.OffsetLeft = 5;
+                    charmLabel.OffsetRight = -5;
+                    charmLabel.OffsetTop = 5;
+                    charmLabel.OffsetBottom = -5;
+                    charmLabel.AddThemeColorOverride("font_color", Colors.Cyan);
+                    
+                    charmPanel.Modulate = Colors.DarkCyan;
+                    charmPanel.AddChild(charmLabel);
+                    charmsContainer.AddChild(charmPanel);
+                }
+            }
+
+            // Show empty slots in Flexible Mode
+            if (GameManager.Instance.IsFlexibleMode()) {
+                // Show empty card slots
+                var allSlotTypes = new[] { Card.TYPE.BW, Card.TYPE.SW, Card.TYPE.E, Card.TYPE.W, Card.TYPE.Q, Card.TYPE.P, Card.TYPE.U };
+                foreach (var slotType in allSlotTypes) {
+                    if (!character.EquippedSlots.ContainsKey(slotType) || character.EquippedSlots[slotType] == null) {
+                        var emptyPanel = new Panel();
+                        emptyPanel.CustomMinimumSize = new Vector2(0, 30);
+                        emptyPanel.Modulate = Colors.Gray;
+                        
+                        var emptyLabel = new Label();
+                        emptyLabel.Text = $"{slotType}: [EMPTY]";
+                        emptyLabel.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+                        emptyLabel.OffsetLeft = 5;
+                        emptyLabel.OffsetRight = -5;
+                        emptyLabel.OffsetTop = 5;
+                        emptyLabel.OffsetBottom = -5;
+                        emptyLabel.AddThemeColorOverride("font_color", Colors.LightGray);
+                        
+                        emptyPanel.AddChild(emptyLabel);
+                        equipmentContainer.AddChild(emptyPanel);
+                    }
                 }
             }
         }
@@ -958,18 +1184,23 @@ namespace meph {
         }
 
         private List<Card> GetAvailableCards() {
-            return AllCards.GetPotionCards();
+            if (GameManager.Instance.IsFlexibleMode()) {
+                // In flexible mode, show all character cards
+                var allCards = new List<Card>();
+                allCards.AddRange(AllCards.GetCharacterCardSet("Rok").Skip(1)); // Skip character card
+                allCards.AddRange(AllCards.GetCharacterCardSet("Yu").Skip(1)); // Skip character card
+                allCards.AddRange(AllCards.GetPotionCards());
+                return allCards;
+            } else {
+                // In character battle mode, only show potion cards
+                return AllCards.GetPotionCards();
+            }
         }
 
         private List<Charm> GetAvailableCharms() {
             var charms = new List<Charm>();
-
-            // Add Rok charms
             charms.AddRange(CharmLogic.PresetCharms.CreateRokCharms());
-
-            // Add Yu charms  
             charms.AddRange(CharmLogic.PresetCharms.CreateYuCharms());
-
             return charms;
         }
     }

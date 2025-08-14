@@ -203,6 +203,28 @@ namespace meph {
             return true;
         }
 
+        // Add this method to CharacterLogic.cs to improve resource checking
+        public static bool CanAffordAndUseCard(Character user, Card card, Character target) {
+            // Check if card has requirements
+            if (card.Requirements != null && card.Requirements.Count > 0) {
+                foreach (var requirement in card.Requirements) {
+                    int currentAmount = requirement.Key switch {
+                        "MP" => user.MP,
+                        "EP" => user.EP,
+                        "UP" => user.UP,
+                        _ => 0
+                    };
+                    
+                    if (currentAmount < requirement.Value) {
+                        ConsoleLog.Warn($"{user.CharName} cannot afford {card.Name} - insufficient {requirement.Key}");
+                        return false;
+                    }
+                }
+            }
+            
+            return true;
+        }
+
         // Helper method to resolve attack damage with critical hit calculation - FIXED NULL CHECKING
         public static void ResolveAttackDamage(Character attacker, Character target, int baseDamage) {
             if (attacker == null || target == null) {
