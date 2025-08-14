@@ -416,9 +416,8 @@ namespace meph {
         }
 
         private void EquipCharacterCards() {
-            // Equip character cards and signature cards
-            var rokCard = RokCards.CreateRokCharacterCard();
-            var yuCard = YuCards.CreateYuCharacterCard();
+            var rokCard = AllCards.GetCharacterCard("Rok");
+            var yuCard = AllCards.GetCharacterCard("Yu");
 
             if (selectedPlayer1.CharName == "Rok") {
                 CharacterLogic.EquipCardToSlot(selectedPlayer1, rokCard);
@@ -438,21 +437,17 @@ namespace meph {
         }
 
         private void EquipRokBasicCards(Character character) {
-            CharacterLogic.EquipCardToSlot(character, RokCards.CreateAuraOfMagic());
-            CharacterLogic.EquipCardToSlot(character, RokCards.CreateTalismanOfCalamity());
-            CharacterLogic.EquipCardToSlot(character, RokCards.CreateSparkingPunch());
-            CharacterLogic.EquipCardToSlot(character, RokCards.CreateWoundingEmber());
-            CharacterLogic.EquipCardToSlot(character, RokCards.CreateAlteringPyre());
-            CharacterLogic.EquipCardToSlot(character, RokCards.CreateBlazingDash());
+            var rokCards = AllCards.GetCharacterCardSet("Rok").Skip(1).ToList(); // Skip character card
+            foreach (var card in rokCards) {
+                CharacterLogic.EquipCardToSlot(character, card);
+            }
         }
 
         private void EquipYuBasicCards(Character character) {
-            CharacterLogic.EquipCardToSlot(character, YuCards.CreateKatanaOfBlizzard());
-            CharacterLogic.EquipCardToSlot(character, YuCards.CreateColdBringer());
-            CharacterLogic.EquipCardToSlot(character, YuCards.CreateGlacialTrap());
-            CharacterLogic.EquipCardToSlot(character, YuCards.CreateJudgementOfHailstones());
-            CharacterLogic.EquipCardToSlot(character, YuCards.CreateFreezingStrike());
-            CharacterLogic.EquipCardToSlot(character, YuCards.CreateForbiddenTechniqueOfFrostbite());
+            var yuCards = AllCards.GetCharacterCardSet("Yu").Skip(1).ToList(); // Skip character card
+            foreach (var card in yuCards) {
+                CharacterLogic.EquipCardToSlot(character, card);
+            }
         }
 
         // Game Play UI
@@ -804,13 +799,7 @@ namespace meph {
         }
 
         private List<Card> GetAvailableCards() {
-            var cards = new List<Card>();
-
-            // Add potion cards
-            cards.Add(RokCards.CreateFiercefulRecover());
-            cards.Add(YuCards.CreateUltimateHeadStart());
-
-            return cards;
+            return AllCards.GetPotionCards();
         }
 
         private List<Charm> GetAvailableCharms() {

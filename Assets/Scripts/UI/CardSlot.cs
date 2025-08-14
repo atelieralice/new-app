@@ -204,26 +204,13 @@ namespace meph
             return card;
         }
 
-        private void AssignCardEffect(Card card)
-        {
-            // This is where you'd connect to your existing card effect system
-            // For now, this is a placeholder - you'd want to use your RokCards/YuCards factories
-            switch (card.Id)
-            {
-                case "rok_character":
-                    card.Effect = RokCards.CreateRokCharacterCard().Effect;
-                    break;
-                case "yu_character":
-                    card.Effect = YuCards.CreateYuCharacterCard().Effect;
-                    break;
-                case "katana_of_blizzard":
-                    card.Effect = YuCards.CreateKatanaOfBlizzard().Effect;
-                    break;
-                // Add more cases as needed
-                default:
-                    ConsoleLog.Warn($"No effect assigned for card: {card.Id}");
-                    break;
-            }
-        }
+        private void AssignCardEffect(Card card) {
+    var effectCard = AllCards.GetCardById(card.Id);
+    if (effectCard != null) {
+        card.Effect = effectCard.Effect;
+    } else {
+        ConsoleLog.Warn($"No effect assigned for card: {card.Id}");
+    }
+}
     }
 }
