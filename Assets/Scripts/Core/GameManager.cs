@@ -42,6 +42,9 @@ public partial class GameManager : Node {
         // Setup event handlers
         InitializeEvents();
 
+        // CRITICAL: Defer console window creation to avoid scene tree conflicts
+        CallDeferred(nameof(CreateConsoleWindowDeferred));
+
         ConsoleLog.Game("GameManager ready.");
         GameEvents.TriggerGameStarted();
 
@@ -66,40 +69,95 @@ public partial class GameManager : Node {
         // Validate critical nodes
         ValidateNodeReferences();
         
-        // Create external console window
-        CreateConsoleWindow();
+        // Console window creation is deferred to avoid scene tree conflicts
     }
 
     private void ValidateNodeReferences() {
-        if (boardRoot == null) ConsoleLog.Error("BoardRoot node not found!");
-        if (uiRoot == null) ConsoleLog.Error("UI node not found!");
-        if (gameUI == null) ConsoleLog.Error("GameUI node not found!");
+        if (boardRoot == null) {
+            GD.PrintErr("BoardRoot node not found!");
+            ConsoleLog.Error("BoardRoot node not found!");
+        }
+        if (uiRoot == null) {
+            GD.PrintErr("UI node not found!");
+            ConsoleLog.Error("UI node not found!");
+        }
+        if (gameUI == null) {
+            GD.PrintErr("GameUI node not found!");
+            ConsoleLog.Error("GameUI node not found!");
+        }
+    }
+
+    // Deferred console window creation to avoid scene tree conflicts
+    private void CreateConsoleWindowDeferred() {
+        CallDeferred(nameof(CreateConsoleWindow));
     }
 
     private void CreateConsoleWindow() {
+        if (consoleWindow != null) {
+            ConsoleLog.Warn("Console window already exists");
+            return;
+        }
+
         try {
-            var consoleScene = GD.Load<PackedScene>("res://Scenes/ConsoleWindow.tscn");
+            var consoleScene = GD.Load<PackedScene>("res://Assets/Scenes/ConsoleWindow.tscn");
             if (consoleScene == null) {
-                ConsoleLog.Error("Failed to load ConsoleWindow.tscn - scene file not found");
+                GD.PrintErr("Failed to load ConsoleWindow.tscn - scene file not found");
+                CreateConsoleWindowProgrammatically();
                 return;
             }
 
             consoleWindow = consoleScene.Instantiate<ConsoleWindow>();
             if (consoleWindow == null) {
-                ConsoleLog.Error("Failed to instantiate ConsoleWindow");
+                GD.PrintErr("Failed to instantiate ConsoleWindow from scene");
+                CreateConsoleWindowProgrammatically();
                 return;
             }
             
-            // Add to main window for native OS window behavior
-            GetWindow().AddChild(consoleWindow);
+            // Add to scene tree root safely
+            GetTree().Root.CallDeferred("add_child", consoleWindow);
             
-            // Show as popup centered window
-            consoleWindow.PopupCentered(new Vector2I(800, 600));
-            
-            ConsoleLog.Game("External console window created successfully");
+            ConsoleLog.Game("External console window created from scene successfully");
         }
         catch (System.Exception ex) {
-            ConsoleLog.Error($"Failed to create console window: {ex.Message}");
+            GD.PrintErr($"Failed to create console window from scene: {ex.Message}");
+            CreateConsoleWindowProgrammatically();
+        }
+    }
+
+    // Fallback: Create console window programmatically
+    private void CreateConsoleWindowProgrammatically() {
+        try {
+            consoleWindow = new ConsoleWindow();
+            
+            // Create and configure the console log RichTextLabel
+            var richTextLabel = new RichTextLabel {
+                Name = "ConsoleLog",
+                BbcodeEnabled = true,
+                ScrollFollowing = true,
+                SelectionEnabled = true,
+                ContextMenuEnabled = true,
+                FitContent = true,
+                ScrollActive = true
+            };
+            
+            // Set to fill the entire window with padding
+            richTextLabel.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+            richTextLabel.OffsetLeft = 8;
+            richTextLabel.OffsetRight = -8;
+            richTextLabel.OffsetTop = 8;
+            richTextLabel.OffsetBottom = -8;
+            
+            // Add to console window
+            consoleWindow.AddChild(richTextLabel);
+            
+            // Add to scene tree root safely
+            GetTree().Root.CallDeferred("add_child", consoleWindow);
+            
+            ConsoleLog.Game("Console window created programmatically");
+        }
+        catch (System.Exception ex) {
+            GD.PrintErr($"Failed to create console window programmatically: {ex.Message}");
+            // Last resort: log to Godot's built-in console only
         }
     }
 

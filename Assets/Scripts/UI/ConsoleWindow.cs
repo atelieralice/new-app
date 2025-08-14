@@ -10,36 +10,42 @@ namespace meph
         private Button closeButton;
         private Panel titleBar;
         private bool isDragging = false;
+        private bool isInitialized = false;
 
         public override void _Ready()
         {
-            // CRITICAL: Set native window properties FIRST, before anything else
+            // Prevent multiple initialization
+            if (isInitialized) return;
+            
+            // CRITICAL: Set native window properties FIRST
             SetupNativeWindow();
             
-            // Get the RichTextLabel by its unique name
-            consoleLog = GetNode<RichTextLabel>("%ConsoleLog");
+            // Find or create the console log
+            SetupConsoleLog();
             
             if (consoleLog == null)
             {
-                GD.PrintErr("Could not find RichTextLabel with unique name %ConsoleLog");
+                GD.PrintErr("Failed to setup console log - ConsoleWindow initialization failed");
                 return;
             }
 
             SetupWindowFeatures();
             ConnectSignals();
             
-            // Initialize your existing ConsoleLog system
+            // Initialize the ConsoleLog system
             ConsoleLog.Init(consoleLog);
             ConsoleLog.Game("Console window initialized as native window");
+            
+            isInitialized = true;
         }
 
         private void SetupNativeWindow()
         {
-            // CRITICAL: Set ForceNative BEFORE window is displayed
-            ForceNative = true;
+            // CRITICAL: Hide window FIRST to prevent ForceNative error
+            Visible = false;
             
-            // CRITICAL: Disable subwindow embedding to make this a native OS window
-            GetViewport().SetEmbeddingSubwindows(false);
+            // Set ForceNative while window is hidden
+            ForceNative = true;
             
             // Window mode and basic settings
             Mode = ModeEnum.Windowed;
@@ -58,22 +64,60 @@ namespace meph
             SetFlag(Flags.Transparent, false); // Opaque background
             SetFlag(Flags.NoFocus, false); // Can be focused
             SetFlag(Flags.ExcludeFromCapture, true); // Exclude from screenshots
+        }
+
+        private void SetupConsoleLog()
+        {
+            // Try to find existing RichTextLabel (from scene)
+            consoleLog = GetNodeOrNull<RichTextLabel>("%ConsoleLog") ?? GetNodeOrNull<RichTextLabel>("ConsoleLog");
             
-            // Initially hide the window to prevent the ForceNative error
-            Visible = false;
+            // If not found, create one programmatically
+            if (consoleLog == null)
+            {
+                CreateConsoleLogProgrammatically();
+            }
+        }
+
+        private void CreateConsoleLogProgrammatically()
+        {
+            consoleLog = new RichTextLabel
+            {
+                Name = "ConsoleLog",
+                BbcodeEnabled = true,
+                ScrollFollowing = true,
+                SelectionEnabled = true,
+                ContextMenuEnabled = true,
+                FitContent = true,
+                ScrollActive = true
+            };
+            
+            // Set to fill the entire window with padding
+            consoleLog.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+            consoleLog.OffsetLeft = 8;
+            consoleLog.OffsetRight = -8;
+            consoleLog.OffsetTop = 8;
+            consoleLog.OffsetBottom = -8;
+            
+            // Add to this window
+            AddChild(consoleLog);
+            
+            GD.Print("Created RichTextLabel programmatically for console window");
         }
 
         private void SetupWindowFeatures()
         {
             // Configure console RichTextLabel
-            consoleLog.FitContent = true;
-            consoleLog.ScrollActive = true;
-            consoleLog.ScrollFollowing = true;
-            consoleLog.BbcodeEnabled = true;
-            consoleLog.SelectionEnabled = true;
-            consoleLog.ContextMenuEnabled = true;
+            if (consoleLog != null)
+            {
+                consoleLog.FitContent = true;
+                consoleLog.ScrollActive = true;
+                consoleLog.ScrollFollowing = true;
+                consoleLog.BbcodeEnabled = true;
+                consoleLog.SelectionEnabled = true;
+                consoleLog.ContextMenuEnabled = true;
+            }
             
-            // Find UI elements if they exist
+            // Find UI elements if they exist (from scene)
             clearButton = GetNodeOrNull<Button>("%ClearButton");
             minimizeButton = GetNodeOrNull<Button>("%MinimizeButton");
             closeButton = GetNodeOrNull<Button>("%CloseButton");
@@ -88,7 +132,7 @@ namespace meph
             FocusExited += OnFocusExited;
             VisibilityChanged += OnVisibilityChanged;
             
-            // UI button signals
+            // UI button signals (if they exist from scene)
             if (clearButton != null)
                 clearButton.Pressed += OnClearPressed;
             
@@ -98,7 +142,7 @@ namespace meph
             if (closeButton != null)
                 closeButton.Pressed += OnCloseRequested;
             
-            // Title bar dragging
+            // Title bar dragging (if it exists from scene)
             if (titleBar != null)
             {
                 titleBar.GuiInput += OnTitleBarInput;
@@ -115,18 +159,20 @@ namespace meph
         private void OnFocusEntered()
         {
             // Visual feedback when window gains focus
-            AddThemeColorOverride("background_color", new Color(1.0f, 1.0f, 1.0f, 1.0f));
+            if (HasThemeColorOverride("background_color"))
+                AddThemeColorOverride("background_color", new Color(1.0f, 1.0f, 1.0f, 1.0f));
         }
 
         private void OnFocusExited()
         {
             // Slightly dim when window loses focus
-            AddThemeColorOverride("background_color", new Color(0.95f, 0.95f, 0.95f, 1.0f));
+            if (HasThemeColorOverride("background_color"))
+                AddThemeColorOverride("background_color", new Color(0.95f, 0.95f, 0.95f, 1.0f));
         }
 
         private void OnVisibilityChanged()
         {
-            if (Visible)
+            if (Visible && isInitialized)
             {
                 ConsoleLog.Game("Console window shown");
             }
@@ -176,8 +222,11 @@ namespace meph
             else
             {
                 Show();
-                GrabFocus();
-                RequestAttention();
+                // Bring window to front when shown
+                if (HasMethod("grab_focus"))
+                    GrabFocus();
+                if (HasMethod("request_attention"))
+                    RequestAttention();
             }
         }
 
@@ -195,7 +244,8 @@ namespace meph
 
         public void CenterOnScreen()
         {
-            MoveToCenter();
+            if (HasMethod("move_to_center"))
+                MoveToCenter();
         }
 
         public void SaveConsoleToFile()
@@ -207,7 +257,10 @@ namespace meph
             var filepath = $"user://logs/{filename}";
             
             // Create logs directory if it doesn't exist
-            DirAccess.MakeDirRecursiveAbsolute("user://logs");
+            if (!DirAccess.DirExistsAbsolute("user://logs"))
+            {
+                DirAccess.MakeDirRecursiveAbsolute("user://logs");
+            }
             
             // Save console text
             var file = FileAccess.Open(filepath, FileAccess.ModeFlags.Write);
@@ -226,25 +279,28 @@ namespace meph
         // Handle keyboard shortcuts
         public override void _UnhandledKeyInput(InputEvent @event)
         {
-            if (!HasFocus()) return;
+            if (!HasFocus() || !isInitialized) return;
             
             if (@event is InputEventKey keyEvent && keyEvent.Pressed)
             {
                 // Ctrl+C to copy selected text
                 if (keyEvent.CtrlPressed && keyEvent.Keycode == Key.C)
                 {
-                    var selectedText = consoleLog.GetSelectedText();
-                    if (!string.IsNullOrEmpty(selectedText))
+                    if (consoleLog != null)
                     {
-                        DisplayServer.ClipboardSet(selectedText);
-                        ConsoleLog.Info("Selected text copied to clipboard");
+                        var selectedText = consoleLog.GetSelectedText();
+                        if (!string.IsNullOrEmpty(selectedText))
+                        {
+                            DisplayServer.ClipboardSet(selectedText);
+                            ConsoleLog.Info("Selected text copied to clipboard");
+                        }
                     }
                 }
                 
                 // Ctrl+A to select all
                 if (keyEvent.CtrlPressed && keyEvent.Keycode == Key.A)
                 {
-                    consoleLog.SelectAll();
+                    consoleLog?.SelectAll();
                 }
                 
                 // Ctrl+L to clear console
@@ -270,7 +326,7 @@ namespace meph
         // Handle window input for custom behaviors
         public override void _Input(InputEvent @event)
         {
-            if (!HasFocus()) return;
+            if (!HasFocus() || !isInitialized) return;
             
             // Handle mouse wheel for font size adjustment
             if (@event is InputEventMouseButton mouseButton && mouseButton.CtrlPressed)
@@ -293,6 +349,8 @@ namespace meph
             if (consoleLog == null) return;
             
             var currentSize = consoleLog.GetThemeFontSize("normal_font_size");
+            if (currentSize == 0) currentSize = 12; // Default font size
+            
             var newSize = Mathf.Clamp(currentSize + delta, 8, 32);
             
             consoleLog.AddThemeFontSizeOverride("normal_font_size", newSize);
@@ -302,14 +360,28 @@ namespace meph
         // Cleanup
         public override void _ExitTree()
         {
-            if (clearButton != null) clearButton.Pressed -= OnClearPressed;
-            if (minimizeButton != null) minimizeButton.Pressed -= OnMinimizePressed;
-            if (closeButton != null) closeButton.Pressed -= OnCloseRequested;
+            // Disconnect signals safely
+            if (clearButton != null && clearButton.IsConnected("pressed", Callable.From(OnClearPressed)))
+                clearButton.Pressed -= OnClearPressed;
+                
+            if (minimizeButton != null && minimizeButton.IsConnected("pressed", Callable.From(OnMinimizePressed)))
+                minimizeButton.Pressed -= OnMinimizePressed;
+                
+            if (closeButton != null && closeButton.IsConnected("pressed", Callable.From(OnCloseRequested)))
+                closeButton.Pressed -= OnCloseRequested;
             
+            // Disconnect window signals
             CloseRequested -= OnCloseRequested;
             FocusEntered -= OnFocusEntered;
             FocusExited -= OnFocusExited;
             VisibilityChanged -= OnVisibilityChanged;
+            
+            if (titleBar != null)
+            {
+                titleBar.GuiInput -= OnTitleBarInput;
+            }
+            
+            isInitialized = false;
         }
     }
 }
