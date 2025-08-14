@@ -3,10 +3,15 @@ using meph;
 using System.Linq;
 
 public enum GamePhase {
-    SETUP,
+    MODE_SELECTION,
     CHARACTER_SELECTION,
-    BATTLE, // Combined equip/battle phase
+    BATTLE,
     GAME_OVER
+}
+
+public enum GameMode {
+    CHARACTER_BATTLE,  // Pre-equipped characters
+    FLEXIBLE_MODE      // Manual equipment during battle
 }
 
 public partial class GameManager : Node {
@@ -27,7 +32,8 @@ public partial class GameManager : Node {
     private Control uiRoot;
 
     // Game state
-    public GamePhase CurrentPhase { get; private set; } = GamePhase.SETUP;
+    public GamePhase CurrentPhase { get; private set; } = GamePhase.MODE_SELECTION;
+    public GameMode CurrentMode { get; private set; } = GameMode.CHARACTER_BATTLE;
     public bool GameInProgress { get; private set; } = false;
 
     public override void _Ready() {
@@ -48,8 +54,8 @@ public partial class GameManager : Node {
         ConsoleLog.Game("GameManager ready.");
         GameEvents.TriggerGameStarted();
 
-        // Start the game setup phase
-        StartGameSetup();
+        // Start with mode selection
+        StartModeSelection();
     }
 
     private void InitializeCoreSystems() {
@@ -293,27 +299,31 @@ public partial class GameManager : Node {
         
         Attacker = null;
         Defender = null;
-        CurrentPhase = GamePhase.SETUP;
+        CurrentPhase = GamePhase.MODE_SELECTION;
         GameInProgress = false;
         
         ConsoleLog.Game("Game reset");
     }
 
-    // Main Gameplay Loop Implementation
-    public void StartGameSetup() {
-        CurrentPhase = GamePhase.SETUP;
+    // Game Flow Management
+    public void StartModeSelection() {
+        CurrentPhase = GamePhase.MODE_SELECTION;
         GameInProgress = false;
         
-        ConsoleLog.Game("Starting game setup...");
-        GameEvents.TriggerGamePhaseChanged("SETUP");
+        ConsoleLog.Game("Select game mode...");
+        GameEvents.TriggerGamePhaseChanged("MODE_SELECTION");
+    }
+
+    public void SetGameMode(GameMode mode) {
+        if (CurrentPhase != GamePhase.MODE_SELECTION) {
+            ConsoleLog.Warn("Cannot set game mode - not in mode selection phase");
+            return;
+        }
+
+        CurrentMode = mode;
+        string modeName = mode == GameMode.CHARACTER_BATTLE ? "Character Battle" : "Flexible Mode";
+        ConsoleLog.Game($"Game mode set to: {modeName}");
         
-        // Clear any existing game state
-        Reset();
-        
-        // Reinitialize game systems
-        InitializeCoreSystems();
-        
-        ConsoleLog.Game("Game setup complete. Ready for character selection.");
         TransitionToCharacterSelection();
     }
 
@@ -358,7 +368,12 @@ public partial class GameManager : Node {
         GameInProgress = true;
         
         GameEvents.TriggerGamePhaseChanged("BATTLE");
-        ConsoleLog.Game("BATTLE BEGINS! Players can equip cards and attack!");
+        
+        if (CurrentMode == GameMode.CHARACTER_BATTLE) {
+            ConsoleLog.Game("CHARACTER BATTLE MODE: Characters start fully equipped!");
+        } else {
+            ConsoleLog.Game("FLEXIBLE MODE: Equip cards strategically during battle!");
+        }
         
         // Initialize character passives
         CharacterPassives.InitializePassives(Attacker);
@@ -374,15 +389,20 @@ public partial class GameManager : Node {
             return false;
         }
 
-        // Validate character cards are equipped
-        if (!Attacker.EquippedSlots.ContainsKey(Card.TYPE.C)) {
-            ConsoleLog.Error($"{Attacker.CharName} must have a character card equipped");
-            return false;
-        }
+        // In Character Battle mode, validate character cards are equipped
+        if (CurrentMode == GameMode.CHARACTER_BATTLE) {
+            if (!Attacker.EquippedSlots.ContainsKey(Card.TYPE.C)) {
+                ConsoleLog.Error($"{Attacker.CharName} must have a character card equipped");
+                return false;
+            }
 
-        if (!Defender.EquippedSlots.ContainsKey(Card.TYPE.C)) {
-            ConsoleLog.Error($"{Defender.CharName} must have a character card equipped");
-            return false;
+            if (!Defender.EquippedSlots.ContainsKey(Card.TYPE.C)) {
+                ConsoleLog.Error($"{Defender.CharName} must have a character card equipped");
+                return false;
+            }
+        } else {
+            // In Flexible Mode, only character cards should be equipped initially
+            ConsoleLog.Game("Flexible Mode: Players start with only character cards equipped");
         }
 
         return true;
@@ -534,7 +554,7 @@ public partial class GameManager : Node {
         return true;
     }
 
-    // Equipment with phase validation
+    // Equipment with phase validation and card restrictions
     public void EquipCard(Character character, Card card) {
         if (character == null || card == null) {
             ConsoleLog.Warn("Cannot equip card - character or card is null");
@@ -546,7 +566,44 @@ public partial class GameManager : Node {
             return;
         }
 
-        CharacterLogic.EquipCardToSlot(character, card);
+        // Check card ownership restrictions for Q and U cards
+        if (!CanCharacterEquipCard(character, card)) {
+            ConsoleLog.Warn($"{character.CharName} cannot equip {card.Name} - character restriction");
+            return;
+        }
+
+        // In Flexible Mode, equipping a card consumes an action
+        if (CurrentMode == GameMode.FLEXIBLE_MODE && CurrentPhase == GamePhase.BATTLE) {
+            if (!StateManager.CanAct()) {
+                ConsoleLog.Warn("Cannot equip card - no actions remaining");
+                return;
+            }
+
+            StateManager.TryAction(() => {
+                CharacterLogic.EquipCardToSlot(character, card);
+                ConsoleLog.Action($"{character.CharName} spent an action to equip {card.Name}");
+            });
+        } else {
+            // Character Battle mode or setup phase - free equipment
+            CharacterLogic.EquipCardToSlot(character, card);
+        }
+    }
+
+    // Check if a character can equip a specific card (Q and U restrictions)
+    public bool CanCharacterEquipCard(Character character, Card card) {
+        // Q and U cards can only be equipped by their original character
+        if (card.Type == Card.TYPE.Q || card.Type == Card.TYPE.U) {
+            return IsCardFromCharacter(card, character.CharName);
+        }
+        
+        // All other cards can be equipped by anyone
+        return true;
+    }
+
+    // Check if a card belongs to a specific character
+    private bool IsCardFromCharacter(Card card, string characterName) {
+        var characterCards = AllCards.GetCharacterCardSet(characterName);
+        return characterCards.Any(c => c.Id == card.Id);
     }
 
     public void EquipCharm(Character character, Charm charm) {
@@ -560,12 +617,28 @@ public partial class GameManager : Node {
             return;
         }
 
-        CharmLogic.EquipCharm(character, charm);
+        // In Flexible Mode, equipping a charm consumes an action
+        if (CurrentMode == GameMode.FLEXIBLE_MODE && CurrentPhase == GamePhase.BATTLE) {
+            if (!StateManager.CanAct()) {
+                ConsoleLog.Warn("Cannot equip charm - no actions remaining");
+                return;
+            }
+
+            StateManager.TryAction(() => {
+                CharmLogic.EquipCharm(character, charm);
+                ConsoleLog.Action($"{character.CharName} spent an action to equip charm {charm.Name}");
+            });
+        } else {
+            // Character Battle mode or setup phase - free equipment
+            CharmLogic.EquipCharm(character, charm);
+        }
     }
 
     // API for game state queries
     public bool CanEquipCards() => CurrentPhase == GamePhase.CHARACTER_SELECTION || CurrentPhase == GamePhase.BATTLE;
     public bool CanPerformActions() => CurrentPhase == GamePhase.BATTLE && GameInProgress;
+    public bool IsFlexibleMode() => CurrentMode == GameMode.FLEXIBLE_MODE;
+    public bool IsCharacterBattleMode() => CurrentMode == GameMode.CHARACTER_BATTLE;
 
     // Turn management
     public void EndTurn() {
@@ -601,7 +674,7 @@ public partial class GameManager : Node {
 
     public void RestartGame() {
         ConsoleLog.Game("Restarting game...");
-        StartGameSetup();
+        StartModeSelection();
     }
 
     // Input handling for console toggle

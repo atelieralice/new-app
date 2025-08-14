@@ -6,10 +6,15 @@ namespace meph {
     [GlobalClass]
     public partial class GameUI : Control {
         // UI Containers
+        private Control modeSelectionPanel;
         private Control characterSelectionPanel;
         private Control cardSelectionPanel;
         private Control gamePlayPanel;
         private Control charmSelectionPanel;
+
+        // Mode Selection
+        private Button characterBattleModeButton;
+        private Button flexibleModeButton;
 
         // Character Selection
         private VBoxContainer player1CharacterContainer;
@@ -31,6 +36,7 @@ namespace meph {
         private Button normalAttackButton;
         private Button useCardButton;
         private Label currentTurnLabel;
+        private Label gameModeLabel;
 
         // Equipment Display
         private GridContainer player1EquipmentContainer;
@@ -46,7 +52,7 @@ namespace meph {
         public override void _Ready() {
             CreateUIStructure();
             SubscribeToEvents();
-            ShowCharacterSelection();
+            ShowModeSelection();
         }
 
         private void CreateUIStructure() {
@@ -54,6 +60,7 @@ namespace meph {
             SetAnchorsAndOffsetsToFullRect(this);
             
             // Create main panels
+            CreateModeSelectionPanel();
             CreateCharacterSelectionPanel();
             CreateGamePlayPanel();
             CreateCardSelectionPanel();
@@ -64,10 +71,61 @@ namespace meph {
             control.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
         }
 
+        private void CreateModeSelectionPanel() {
+            modeSelectionPanel = new Control();
+            modeSelectionPanel.Name = "ModeSelectionPanel";
+            SetAnchorsAndOffsetsToFullRect(modeSelectionPanel);
+            AddChild(modeSelectionPanel);
+
+            // Main container for mode selection
+            var mainVBox = new VBoxContainer();
+            SetAnchorsAndOffsetsToFullRect(mainVBox);
+            modeSelectionPanel.AddChild(mainVBox);
+
+            // Title
+            var titleLabel = new Label();
+            titleLabel.Text = "SELECT GAME MODE";
+            titleLabel.HorizontalAlignment = HorizontalAlignment.Center;
+            titleLabel.AddThemeStyleboxOverride("normal", new StyleBoxFlat());
+            mainVBox.AddChild(titleLabel);
+
+            // Add spacer
+            var spacer1 = new Control();
+            spacer1.CustomMinimumSize = new Vector2(0, 50);
+            mainVBox.AddChild(spacer1);
+
+            // Mode buttons container
+            var modeButtonsVBox = new VBoxContainer();
+            modeButtonsVBox.SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter;
+            mainVBox.AddChild(modeButtonsVBox);
+
+            // Character Battle Mode button
+            characterBattleModeButton = new Button();
+            characterBattleModeButton.Text = "CHARACTER BATTLE\n\nCharacters start fully equipped\nwith their signature cards.\nFast-paced combat!";
+            characterBattleModeButton.CustomMinimumSize = new Vector2(300, 120);
+            characterBattleModeButton.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+            characterBattleModeButton.Pressed += () => OnModeSelected(GameMode.CHARACTER_BATTLE);
+            modeButtonsVBox.AddChild(characterBattleModeButton);
+
+            // Add spacer between buttons
+            var spacer2 = new Control();
+            spacer2.CustomMinimumSize = new Vector2(0, 20);
+            modeButtonsVBox.AddChild(spacer2);
+
+            // Flexible Mode button
+            flexibleModeButton = new Button();
+            flexibleModeButton.Text = "FLEXIBLE MODE\n\nEquip any cards to any character!\nEquipping uses actions.\nStrategic gameplay!";
+            flexibleModeButton.CustomMinimumSize = new Vector2(300, 120);
+            flexibleModeButton.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+            flexibleModeButton.Pressed += () => OnModeSelected(GameMode.FLEXIBLE_MODE);
+            modeButtonsVBox.AddChild(flexibleModeButton);
+        }
+
         private void CreateCharacterSelectionPanel() {
             characterSelectionPanel = new Control();
             characterSelectionPanel.Name = "CharacterSelectionPanel";
             SetAnchorsAndOffsetsToFullRect(characterSelectionPanel);
+            characterSelectionPanel.Visible = false;
             AddChild(characterSelectionPanel);
 
             // Main container for character selection
@@ -148,9 +206,21 @@ namespace meph {
             AddChild(gamePlayPanel);
 
             // Main container
+            var mainVBox = new VBoxContainer();
+            SetAnchorsAndOffsetsToFullRect(mainVBox);
+            gamePlayPanel.AddChild(mainVBox);
+
+            // Game mode indicator
+            gameModeLabel = new Label();
+            gameModeLabel.Text = "MODE: CHARACTER BATTLE";
+            gameModeLabel.HorizontalAlignment = HorizontalAlignment.Center;
+            gameModeLabel.AddThemeColorOverride("font_color", Colors.Yellow);
+            mainVBox.AddChild(gameModeLabel);
+
+            // Main game container
             var mainHBox = new HBoxContainer();
-            SetAnchorsAndOffsetsToFullRect(mainHBox);
-            gamePlayPanel.AddChild(mainHBox);
+            mainHBox.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
+            mainVBox.AddChild(mainHBox);
 
             // Player 1 Info Panel
             CreatePlayerInfoPanel(mainHBox, true);
@@ -278,7 +348,6 @@ namespace meph {
             cardSelectionPanel = new Control();
             cardSelectionPanel.Name = "CardSelectionPanel";
             cardSelectionPanel.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.BottomWide);
-            // Remove manual position and size - let the preset handle it
             cardSelectionPanel.Visible = false;
             AddChild(cardSelectionPanel);
 
@@ -296,7 +365,7 @@ namespace meph {
             cardVBox.AddChild(cardScrollContainer);
 
             availableCardsContainer = new GridContainer();
-            availableCardsContainer.Columns = 3;
+            availableCardsContainer.Columns = 4;
             cardScrollContainer.AddChild(availableCardsContainer);
         }
 
@@ -304,7 +373,6 @@ namespace meph {
             charmSelectionPanel = new Control();
             charmSelectionPanel.Name = "CharmSelectionPanel";
             charmSelectionPanel.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.RightWide);
-            // Remove manual position and size - let the preset handle it
             charmSelectionPanel.Visible = false;
             AddChild(charmSelectionPanel);
 
@@ -340,8 +408,22 @@ namespace meph {
             GameEvents.OnGameEnded += OnGameEnded;
         }
 
+        // Mode Selection
+        private void ShowModeSelection() {
+            modeSelectionPanel.Visible = true;
+            characterSelectionPanel.Visible = false;
+            cardSelectionPanel.Visible = false;
+            gamePlayPanel.Visible = false;
+            charmSelectionPanel.Visible = false;
+        }
+
+        private void OnModeSelected(GameMode mode) {
+            GameManager.Instance.SetGameMode(mode);
+        }
+
         // Character Selection
         private void ShowCharacterSelection() {
+            modeSelectionPanel.Visible = false;
             characterSelectionPanel.Visible = true;
             cardSelectionPanel.Visible = false;
             gamePlayPanel.Visible = false;
@@ -416,23 +498,32 @@ namespace meph {
         }
 
         private void EquipCharacterCards() {
+            // Always equip character cards first
             var rokCard = AllCards.GetCharacterCard("Rok");
             var yuCard = AllCards.GetCharacterCard("Yu");
 
             if (selectedPlayer1.CharName == "Rok") {
                 CharacterLogic.EquipCardToSlot(selectedPlayer1, rokCard);
-                EquipRokBasicCards(selectedPlayer1);
+                if (GameManager.Instance.IsCharacterBattleMode()) {
+                    EquipRokBasicCards(selectedPlayer1);
+                }
             } else if (selectedPlayer1.CharName == "Yu") {
                 CharacterLogic.EquipCardToSlot(selectedPlayer1, yuCard);
-                EquipYuBasicCards(selectedPlayer1);
+                if (GameManager.Instance.IsCharacterBattleMode()) {
+                    EquipYuBasicCards(selectedPlayer1);
+                }
             }
 
             if (selectedPlayer2.CharName == "Rok") {
                 CharacterLogic.EquipCardToSlot(selectedPlayer2, rokCard);
-                EquipRokBasicCards(selectedPlayer2);
+                if (GameManager.Instance.IsCharacterBattleMode()) {
+                    EquipRokBasicCards(selectedPlayer2);
+                }
             } else if (selectedPlayer2.CharName == "Yu") {
                 CharacterLogic.EquipCardToSlot(selectedPlayer2, yuCard);
-                EquipYuBasicCards(selectedPlayer2);
+                if (GameManager.Instance.IsCharacterBattleMode()) {
+                    EquipYuBasicCards(selectedPlayer2);
+                }
             }
         }
 
@@ -452,6 +543,7 @@ namespace meph {
 
         // Game Play UI
         private void ShowGamePlay() {
+            modeSelectionPanel.Visible = false;
             characterSelectionPanel.Visible = false;
             cardSelectionPanel.Visible = true;
             gamePlayPanel.Visible = true;
@@ -466,6 +558,17 @@ namespace meph {
             if (GameManager.Instance.Attacker != null && GameManager.Instance.Defender != null) {
                 player1NameLabel.Text = $"PLAYER 1: {GameManager.Instance.Attacker.CharName}";
                 player2NameLabel.Text = $"PLAYER 2: {GameManager.Instance.Defender.CharName}";
+
+                // Update game mode display
+                string modeText = GameManager.Instance.IsCharacterBattleMode() ? 
+                    "MODE: CHARACTER BATTLE" : "MODE: FLEXIBLE";
+                gameModeLabel.Text = modeText;
+                
+                if (GameManager.Instance.IsFlexibleMode()) {
+                    gameModeLabel.AddThemeColorOverride("font_color", Colors.Cyan);
+                } else {
+                    gameModeLabel.AddThemeColorOverride("font_color", Colors.Yellow);
+                }
 
                 UpdatePlayerResources(GameManager.Instance.Attacker);
                 UpdatePlayerResources(GameManager.Instance.Defender);
@@ -500,10 +603,28 @@ namespace meph {
 
         private Button CreateCardButton(Card card) {
             var button = new Button();
+            var currentPlayer = GameManager.Instance.GetCurrentPlayer();
+            
             button.Text = $"{card.Name}\n{card.Type}\n{GetShortDescription(card.Description)}";
             button.CustomMinimumSize = new Vector2(180, 100);
             button.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-            button.Pressed += () => OnCardSelected(card);
+            
+            // Check if current player can equip this card (Q/U restrictions)
+            bool canEquip = currentPlayer == null || GameManager.Instance.CanCharacterEquipCard(currentPlayer, card);
+            
+            if (!canEquip) {
+                button.Modulate = Colors.Gray;
+                button.Disabled = true;
+                button.Text += "\n(RESTRICTED)";
+            } else {
+                button.Pressed += () => OnCardSelected(card);
+            }
+            
+            // Show action cost in Flexible Mode
+            if (GameManager.Instance.IsFlexibleMode() && canEquip) {
+                button.Text += "\n[Action Cost: 1]";
+            }
+            
             return button;
         }
 
@@ -513,6 +634,12 @@ namespace meph {
             button.CustomMinimumSize = new Vector2(180, 80);
             button.AutowrapMode = TextServer.AutowrapMode.WordSmart;
             button.Pressed += () => OnCharmSelected(charm);
+            
+            // Show action cost in Flexible Mode
+            if (GameManager.Instance.IsFlexibleMode()) {
+                button.Text += "\n[Action Cost: 1]";
+            }
+            
             return button;
         }
 
@@ -525,7 +652,11 @@ namespace meph {
             var currentPlayer = GameManager.Instance.GetCurrentPlayer();
             if (currentPlayer != null) {
                 GameManager.Instance.EquipCard(currentPlayer, card);
-                ConsoleLog.Info($"{currentPlayer.CharName} equipped {card.Name}");
+                
+                // Refresh available cards to update action costs and restrictions
+                if (GameManager.Instance.IsFlexibleMode()) {
+                    PopulateAvailableCards();
+                }
             }
         }
 
@@ -533,7 +664,11 @@ namespace meph {
             var currentPlayer = GameManager.Instance.GetCurrentPlayer();
             if (currentPlayer != null) {
                 GameManager.Instance.EquipCharm(currentPlayer, charm);
-                ConsoleLog.Info($"{currentPlayer.CharName} equipped charm {charm.Name}");
+                
+                // Refresh available charms in Flexible Mode
+                if (GameManager.Instance.IsFlexibleMode()) {
+                    PopulateAvailableCharms();
+                }
             }
         }
 
@@ -594,7 +729,9 @@ namespace meph {
 
         // Event Handlers
         private void OnGamePhaseChanged(string phase) {
-            if (phase == "BATTLE") {
+            if (phase == "CHARACTER_SELECTION") {
+                ShowCharacterSelection();
+            } else if (phase == "BATTLE") {
                 ShowGamePlay();
             }
         }
@@ -607,6 +744,12 @@ namespace meph {
             UpdatePlayerResources(character);
             UpdateActionButtons();
             UpdateCurrentTurnDisplay();
+            
+            // Refresh card/charm availability in Flexible Mode
+            if (GameManager.Instance.IsFlexibleMode()) {
+                PopulateAvailableCards();
+                PopulateAvailableCharms();
+            }
         }
 
         private void OnResourceChanged(Character character, int amount, string type) {
@@ -615,12 +758,20 @@ namespace meph {
 
         private void OnCardEquipped(Character character, Card card) {
             UpdateEquipmentDisplay();
-            ConsoleLog.Info($"{character.CharName} equipped {card.Name}");
+            
+            // Refresh available cards in Flexible Mode to show action cost
+            if (GameManager.Instance.IsFlexibleMode()) {
+                PopulateAvailableCards();
+            }
         }
 
         private void OnCharmEquipped(Character character, Charm charm) {
             UpdateEquipmentDisplay();
-            ConsoleLog.Info($"{character.CharName} equipped charm {charm.Name}");
+            
+            // Refresh available charms in Flexible Mode
+            if (GameManager.Instance.IsFlexibleMode()) {
+                PopulateAvailableCharms();
+            }
         }
 
         private void OnDamageDealt(Character target, int damage, int remainingLP) {
@@ -646,6 +797,12 @@ namespace meph {
 
         private void OnActionsChanged(int remaining) {
             UpdateActionButtons();
+            
+            // Refresh equipment options in Flexible Mode
+            if (GameManager.Instance.IsFlexibleMode()) {
+                PopulateAvailableCards();
+                PopulateAvailableCharms();
+            }
         }
 
         private void OnPlayerVictory(Character winner) {
@@ -709,7 +866,9 @@ namespace meph {
         private void UpdateCurrentTurnDisplay() {
             var currentPlayer = GameManager.Instance.GetCurrentPlayer();
             if (currentPlayer != null) {
-                currentTurnLabel.Text = $"CURRENT TURN: {currentPlayer.CharName}";
+                var actionsText = GameManager.Instance.IsFlexibleMode() ? 
+                    $" (Actions: {GameManager.Instance.StateManager?.ActionsRemaining ?? 0})" : "";
+                currentTurnLabel.Text = $"CURRENT TURN: {currentPlayer.CharName}{actionsText}";
                 currentTurnLabel.Modulate = currentPlayer == GameManager.Instance.Attacker ? Colors.Yellow : Colors.Cyan;
             }
         }
