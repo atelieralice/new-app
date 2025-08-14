@@ -354,7 +354,7 @@ namespace meph
             var newSize = Mathf.Clamp(currentSize + delta, 8, 32);
             
             consoleLog.AddThemeFontSizeOverride("normal_font_size", newSize);
-            ConsoleLog.Info($"Font size adjusted to: {newSize}");
+            // ConsoleLog.Info($"Font size adjusted to: {newSize}");
         }
 
         // Cleanup
