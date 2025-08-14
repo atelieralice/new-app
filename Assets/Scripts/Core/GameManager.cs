@@ -12,9 +12,11 @@ public enum GamePhase {
 public partial class GameManager : Node {
     public static GameManager Instance { get; private set; }
     
-    // Add UI reference
+    // UI references
     private GameUI gameUI;
+    private ConsoleWindow consoleWindow;
 
+    // Core game systems
     public StateManager StateManager { get; private set; }
     public FactorManager FactorManager { get; private set; }
     public Character Attacker { get; private set; }
@@ -23,143 +25,220 @@ public partial class GameManager : Node {
     // Node references for clean separation
     private Control boardRoot;
     private Control uiRoot;
-    private RichTextLabel consoleLog;
 
+    // Game state
     public GamePhase CurrentPhase { get; private set; } = GamePhase.SETUP;
     public bool GameInProgress { get; private set; } = false;
 
-    public override void _Ready ( ) {
+    public override void _Ready() {
         Instance = this;
 
-        // Initialize core systems
-        StateManager = new StateManager ( );
-        FactorManager = new FactorManager ( );
-
-        // Provide player getter to StateManager
-        StateManager.GetPlayer = ( turn ) => turn == TURN.ATTACKER ? Attacker : Defender;
-
+        // Initialize core systems first
+        InitializeCoreSystems();
+        
         // Get node references
-        InitializeNodeReferences ( );
-        InitializeConsole ( );
-        InitializeEvents ( );
+        InitializeNodeReferences();
+        
+        // Setup event handlers
+        InitializeEvents();
 
-        ConsoleLog.Game ( "GameManager ready." );
-        GameEvents.TriggerGameStarted ( );
+        ConsoleLog.Game("GameManager ready.");
+        GameEvents.TriggerGameStarted();
 
         // Start the game setup phase
         StartGameSetup();
     }
 
-    private void InitializeNodeReferences ( ) {
-        boardRoot = GetNode<Control> ( "%BoardRoot" );
-        uiRoot = GetNode<Control> ( "%UI" );
-        consoleLog = GetNode<RichTextLabel> ( "%ConsoleLog" );
+    private void InitializeCoreSystems() {
+        StateManager = new StateManager();
+        FactorManager = new FactorManager();
         
-        // Initialize UI
+        // Provide player getter to StateManager
+        StateManager.GetPlayer = (turn) => turn == TURN.ATTACKER ? Attacker : Defender;
+    }
+
+    private void InitializeNodeReferences() {
+        // Get core UI nodes
+        boardRoot = GetNode<Control>("%BoardRoot");
+        uiRoot = GetNode<Control>("%UI");
         gameUI = GetNode<GameUI>("%GameUI");
         
-        if ( boardRoot == null ) ConsoleLog.Error ( "BoardRoot node not found!" );
-        if ( uiRoot == null ) ConsoleLog.Error ( "UI node not found!" );
-        if ( consoleLog == null ) ConsoleLog.Error ( "ConsoleLog node not found!" );
-        if ( gameUI == null ) ConsoleLog.Error ( "GameUI node not found!" );
+        // Validate critical nodes
+        ValidateNodeReferences();
+        
+        // Create external console window
+        CreateConsoleWindow();
     }
 
-    private void InitializeConsole ( ) {
-        ConsoleLog.Init ( consoleLog );
+    private void ValidateNodeReferences() {
+        if (boardRoot == null) ConsoleLog.Error("BoardRoot node not found!");
+        if (uiRoot == null) ConsoleLog.Error("UI node not found!");
+        if (gameUI == null) ConsoleLog.Error("GameUI node not found!");
     }
 
-    private void InitializeEvents ( ) {
-        // Factor events
-        FactorManager.OnFactorApplied += ( character, effect, instance ) => {
-            ConsoleLog.Factor ( $"Applied {effect} to {character} (dur {instance.Duration})" );
-            GameEvents.TriggerFactorApplied ( character, effect, instance.Duration );
-        };
-        FactorManager.OnFactorRemoved += ( character, effect, instance ) =>
-            ConsoleLog.Factor ( $"Removed {effect} from {character}" );
-        FactorManager.OnStatusCleared += ( character, effect ) => {
-            ConsoleLog.Factor ( $"Status cleared: {effect} on {character}" );
-            GameEvents.TriggerFactorExpired ( character, effect );
-        };
-        FactorManager.OnFactorUpdate += ( ) =>
-            ConsoleLog.Factor ( "Factors updated" );
+    private void CreateConsoleWindow() {
+        try {
+            var consoleScene = GD.Load<PackedScene>("res://Scenes/ConsoleWindow.tscn");
+            if (consoleScene == null) {
+                ConsoleLog.Error("Failed to load ConsoleWindow.tscn - scene file not found");
+                return;
+            }
 
-        // State events
-        StateManager.OnTurnStarted += ( turn, player ) => {
-            ResolveTurnStart ( player, GetOpponent ( player ) );
-            GameEvents.TriggerTurnStarted ( player );
-        };
-        StateManager.OnTurnEnded += ( turn, player ) => {
-            ConsoleLog.Game ( $"{player?.CharName ?? turn.ToString ( )}'s turn ended" );
-            GameEvents.TriggerTurnEnded ( player );
-        };
-        StateManager.OnActionLock += ( ) => {
-            ConsoleLog.Warn ( "No actions remaining" );
-            GameEvents.TriggerActionsLocked ( );
-        };
-        StateManager.OnActionsChanged += ( remaining ) => {
-            ConsoleLog.Action ( $"Actions remaining: {remaining}" );
-            GameEvents.TriggerActionsChanged ( remaining );
-        };
+            consoleWindow = consoleScene.Instantiate<ConsoleWindow>();
+            if (consoleWindow == null) {
+                ConsoleLog.Error("Failed to instantiate ConsoleWindow");
+                return;
+            }
+            
+            // Add to main window for native OS window behavior
+            GetWindow().AddChild(consoleWindow);
+            
+            // Show as popup centered window
+            consoleWindow.PopupCentered(new Vector2I(800, 600));
+            
+            ConsoleLog.Game("External console window created successfully");
+        }
+        catch (System.Exception ex) {
+            ConsoleLog.Error($"Failed to create console window: {ex.Message}");
+        }
+    }
 
-        // Game events (console logging)
-        GameEvents.OnDamageDealt += ( target, damage, remaining ) =>
-            ConsoleLog.Combat ( $"{target} took {damage} damage ({remaining} LP remaining)" );
-        GameEvents.OnCardUsed += ( user, card, target ) =>
-            ConsoleLog.Combat ( $"{user} used {card?.Name ?? "unknown card"} on {target}" );
-        GameEvents.OnCardEquipped += ( character, card ) =>
-            ConsoleLog.Equip ( $"{character} equipped {card.Name}" );
-        GameEvents.OnHealingReceived += ( character, amount ) =>
-            ConsoleLog.Combat ( $"{character} healed for {amount} LP" );
-        GameEvents.OnResourceStolen += ( from, to, amount, type ) =>
-            ConsoleLog.Combat ( $"{to} stole {amount} {type} from {from}" );
-        GameEvents.OnResourceRegenerated += ( character, ep, mp ) =>
-            ConsoleLog.Resource ( $"{character} regenerated {ep} EP and {mp} MP" );
-        GameEvents.OnCardFrozen += ( card, duration ) =>
-            ConsoleLog.Factor ( $"{card.Name} was frozen for {duration} turns" );
-        GameEvents.OnCardUnfrozen += ( card ) =>
-            ConsoleLog.Factor ( $"{card.Name} was unfrozen" );
-        GameEvents.OnAttackResolved += ( attacker, target, damage, wasCrit ) => {
+    private void InitializeEvents() {
+        InitializeFactorEvents();
+        InitializeStateEvents();
+        InitializeGameEvents();
+    }
+
+    private void InitializeFactorEvents() {
+        FactorManager.OnFactorApplied += (character, effect, instance) => {
+            ConsoleLog.Factor($"Applied {effect} to {character} (dur {instance.Duration})");
+            GameEvents.TriggerFactorApplied(character, effect, instance.Duration);
+        };
+        
+        FactorManager.OnFactorRemoved += (character, effect, instance) =>
+            ConsoleLog.Factor($"Removed {effect} from {character}");
+            
+        FactorManager.OnStatusCleared += (character, effect) => {
+            ConsoleLog.Factor($"Status cleared: {effect} on {character}");
+            GameEvents.TriggerFactorExpired(character, effect);
+        };
+        
+        FactorManager.OnFactorUpdate += () =>
+            ConsoleLog.Factor("Factors updated");
+    }
+
+    private void InitializeStateEvents() {
+        StateManager.OnTurnStarted += (turn, player) => {
+            ResolveTurnStart(player, GetOpponent(player));
+            GameEvents.TriggerTurnStarted(player);
+        };
+        
+        StateManager.OnTurnEnded += (turn, player) => {
+            ConsoleLog.Game($"{player?.CharName ?? turn.ToString()}'s turn ended");
+            GameEvents.TriggerTurnEnded(player);
+        };
+        
+        StateManager.OnActionLock += () => {
+            ConsoleLog.Warn("No actions remaining");
+            GameEvents.TriggerActionsLocked();
+        };
+        
+        StateManager.OnActionsChanged += (remaining) => {
+            ConsoleLog.Action($"Actions remaining: {remaining}");
+            GameEvents.TriggerActionsChanged(remaining);
+        };
+    }
+
+    private void InitializeGameEvents() {
+        // Combat events
+        GameEvents.OnDamageDealt += (target, damage, remaining) =>
+            ConsoleLog.Combat($"{target} took {damage} damage ({remaining} LP remaining)");
+            
+        GameEvents.OnCardUsed += (user, card, target) =>
+            ConsoleLog.Combat($"{user} used {card?.Name ?? "unknown card"} on {target}");
+            
+        GameEvents.OnHealingReceived += (character, amount) =>
+            ConsoleLog.Combat($"{character} healed for {amount} LP");
+            
+        GameEvents.OnAttackResolved += (attacker, target, damage, wasCrit) => {
             string critText = wasCrit ? " (CRITICAL HIT!)" : "";
-            ConsoleLog.Combat ( $"{attacker} dealt {damage} damage to {target}{critText}" );
+            ConsoleLog.Combat($"{attacker} dealt {damage} damage to {target}{critText}");
         };
-        GameEvents.OnFactorBlocked += ( character, effect ) =>
-            ConsoleLog.Factor ( $"{effect} blocked by Storm on {character}" );
-        GameEvents.OnPlayerDefeated += ( character ) => {
-            var winner = GetOpponent ( character );
-            ConsoleLog.Game ( $"{character} was defeated! {winner} wins!" );
-            GameEvents.TriggerPlayerVictory ( winner );
-            GameEvents.TriggerGameEnded ( );
+
+        // Equipment events
+        GameEvents.OnCardEquipped += (character, card) =>
+            ConsoleLog.Equip($"{character} equipped {card.Name}");
+            
+        GameEvents.OnCardFrozen += (card, duration) =>
+            ConsoleLog.Factor($"{card.Name} was frozen for {duration} turns");
+            
+        GameEvents.OnCardUnfrozen += (card) =>
+            ConsoleLog.Factor($"{card.Name} was unfrozen");
+
+        // Resource events
+        GameEvents.OnResourceStolen += (from, to, amount, type) =>
+            ConsoleLog.Combat($"{to} stole {amount} {type} from {from}");
+            
+        GameEvents.OnResourceRegenerated += (character, ep, mp) =>
+            ConsoleLog.Resource($"{character} regenerated {ep} EP and {mp} MP");
+            
+        GameEvents.OnResourceGained += (character, amount, type) =>
+            ConsoleLog.Resource($"{character} gained {amount} {type}");
+            
+        GameEvents.OnResourceLost += (character, amount, type) =>
+            ConsoleLog.Resource($"{character} lost {amount} {type}");
+
+        // Factor events
+        GameEvents.OnFactorBlocked += (character, effect) =>
+            ConsoleLog.Factor($"{effect} blocked by Storm on {character}");
+
+        // Game state events
+        GameEvents.OnPlayerDefeated += (character) => {
+            var winner = GetOpponent(character);
+            ConsoleLog.Game($"{character} was defeated! {winner} wins!");
+            GameEvents.TriggerPlayerVictory(winner);
+            GameEvents.TriggerGameEnded();
         };
-        GameEvents.OnResourceGained += ( character, amount, type ) =>
-            ConsoleLog.Resource ( $"{character} gained {amount} {type}" );
-        GameEvents.OnResourceLost += ( character, amount, type ) =>
-            ConsoleLog.Resource ( $"{character} lost {amount} {type}" );
     }
 
     // Game logic methods
-    public Character GetOpponent ( Character player ) {
-        if ( player == null ) return null;
+    public Character GetOpponent(Character player) {
+        if (player == null) return null;
         return player == Attacker ? Defender : Attacker;
     }
 
-    public void SetAttacker ( Character character ) {
+    public Character GetCurrentPlayer() => StateManager.GetPlayer?.Invoke(StateManager.CurrentTurn);
+
+    public void SetAttacker(Character character) {
+        if (Attacker != null) FactorManager.UnregisterCharacter(Attacker);
+        
         Attacker = character;
-        FactorManager.RegisterCharacter ( character );
-        ConsoleLog.Game ( $"Attacker set: {character?.CharName ?? "None"}" );
+        if (character != null) {
+            FactorManager.RegisterCharacter(character);
+        }
+        ConsoleLog.Game($"Attacker set: {character?.CharName ?? "None"}");
     }
 
-    public void SetDefender ( Character character ) {
+    public void SetDefender(Character character) {
+        if (Defender != null) FactorManager.UnregisterCharacter(Defender);
+        
         Defender = character;
-        FactorManager.RegisterCharacter ( character );
-        ConsoleLog.Game ( $"Defender set: {character?.CharName ?? "None"}" );
+        if (character != null) {
+            FactorManager.RegisterCharacter(character);
+        }
+        ConsoleLog.Game($"Defender set: {character?.CharName ?? "None"}");
     }
 
-    public void Reset ( ) {
-        if ( Attacker != null ) FactorManager.UnregisterCharacter ( Attacker );
-        if ( Defender != null ) FactorManager.UnregisterCharacter ( Defender );
+    public void Reset() {
+        if (Attacker != null) FactorManager.UnregisterCharacter(Attacker);
+        if (Defender != null) FactorManager.UnregisterCharacter(Defender);
+        
         Attacker = null;
         Defender = null;
-        ConsoleLog.Game ( "Game reset" );
+        CurrentPhase = GamePhase.SETUP;
+        GameInProgress = false;
+        
+        ConsoleLog.Game("Game reset");
     }
 
     // Main Gameplay Loop Implementation
@@ -173,10 +252,8 @@ public partial class GameManager : Node {
         // Clear any existing game state
         Reset();
         
-        // Initialize game systems
-        StateManager = new StateManager();
-        FactorManager = new FactorManager();
-        StateManager.GetPlayer = (turn) => turn == TURN.ATTACKER ? Attacker : Defender;
+        // Reinitialize game systems
+        InitializeCoreSystems();
         
         ConsoleLog.Game("Game setup complete. Ready for character selection.");
         TransitionToCharacterSelection();
@@ -194,24 +271,21 @@ public partial class GameManager : Node {
             return;
         }
 
+        if (attacker == null || defender == null) {
+            ConsoleLog.Error("Both attacker and defender must be provided");
+            return;
+        }
+
         SetAttacker(attacker);
         SetDefender(defender);
         
         GameEvents.TriggerPlayersSet(attacker, defender);
         ConsoleLog.Game($"Players set: {attacker.CharName} vs {defender.CharName}");
         
-        TransitionToCardEquipment();
-    }
-
-    public void TransitionToCardEquipment() {
-        // Remove this method since you're using hybrid gameplay
-        // Just transition directly to battle
         StartBattle();
     }
 
-    // Fix StartBattle method
     public void StartBattle() {
-        // Only check for CHARACTER_SELECTION (remove CARD_EQUIPMENT reference)
         if (CurrentPhase != GamePhase.CHARACTER_SELECTION) {
             ConsoleLog.Warn("Cannot start battle - not in character selection phase");
             return;
@@ -232,7 +306,7 @@ public partial class GameManager : Node {
         CharacterPassives.InitializePassives(Attacker);
         CharacterPassives.InitializePassives(Defender);
         
-        // FIXED LINE 229: Use GameEvents instead of direct event invocation
+        // Start first turn
         GameEvents.TriggerTurnStarted(GetCurrentPlayer());
     }
 
@@ -256,39 +330,44 @@ public partial class GameManager : Node {
         return true;
     }
 
-    // Fixed turn resolution
+    // Turn resolution with proper error handling
     private void ResolveTurnStart(Character current, Character other) {
         if (current == null) {
+            ConsoleLog.Warn("Turn started with null player - updating factors only");
             FactorManager.UpdateFactors();
             return;
         }
 
-        ConsoleLog.Game($"{current}'s turn started");
+        ConsoleLog.Game($"{current.CharName}'s turn started");
 
-        // Execute character-specific turn start effects
-        CharacterPassives.ExecuteTurnStartEffects(current);
+        try {
+            // Execute character-specific turn start effects
+            CharacterPassives.ExecuteTurnStartEffects(current);
 
-        // Resolve per-turn effects in correct order
-        FactorLogic.ResolveHealing(FactorManager, current, other);
-        if (other != null) {
-            FactorLogic.ResolveRecharge(FactorManager, current, other);
-            FactorLogic.ResolveGrowth(FactorManager, current, other);
+            // Resolve per-turn effects in correct order
+            FactorLogic.ResolveHealing(FactorManager, current, other);
+            if (other != null) {
+                FactorLogic.ResolveRecharge(FactorManager, current, other);
+                FactorLogic.ResolveGrowth(FactorManager, current, other);
+            }
+            FactorLogic.ResolveBurning(FactorManager, current);
+            FactorLogic.ResolveStorm(FactorManager, current);
+            
+            // Age all factors
+            FactorManager.UpdateFactors();
+
+            // Regenerate resources
+            RegenerateResources(current);
+            
+            // Reset actions for new turn
+            StateManager.ActionsRemaining = 1;
+            StateManager.ActionsLocked = false;
         }
-        FactorLogic.ResolveBurning(FactorManager, current);
-        FactorLogic.ResolveStorm(FactorManager, current);
-        
-        // Age all factors
-        FactorManager.UpdateFactors();
-
-        // Regenerate resources (5% EP, 2% MP per game rules)
-        RegenerateResources(current);
-        
-        // Reset actions for new turn - use proper StateManager method
-        StateManager.ActionsRemaining = 1; // Reset to 1 action per turn
-        StateManager.ActionsLocked = false;
+        catch (System.Exception ex) {
+            ConsoleLog.Error($"Error during turn start resolution: {ex.Message}");
+        }
     }
 
-    // Add missing RegenerateResources method
     private void RegenerateResources(Character character) {
         if (character == null) return;
 
@@ -303,25 +382,32 @@ public partial class GameManager : Node {
         int mpRegen = Mathf.RoundToInt(character.MaxMP * 0.02f);
         character.MP = Mathf.Min(character.MP + mpRegen, character.MaxMP);
 
-        // Trigger events for actual regeneration
+        // Trigger events only for actual regeneration
         if (character.EP > oldEP || character.MP > oldMP) {
             GameEvents.TriggerResourceRegenerated(character, character.EP - oldEP, character.MP - oldMP);
         }
     }
 
-    // Fixed damage application - make non-static to access instance
+    // Enhanced damage application with better error handling
     public void ApplyDamage(Character character, int damage, bool isAbsolute = false) {
-        if (damage <= 0 || character == null) return;
+        if (character == null) {
+            ConsoleLog.Error("Cannot apply damage - character is null");
+            return;
+        }
+        
+        if (damage <= 0) {
+            ConsoleLog.Warn($"Invalid damage amount: {damage}");
+            return;
+        }
 
         int finalDamage = damage;
         
         // Handle absolute damage (bypasses DEF but respects shields)
         if (!isAbsolute) {
-            // Apply DEF reduction for non-absolute damage
             finalDamage = Mathf.Max(damage - character.DEF, 0);
         }
 
-        // Always check shields regardless of damage type
+        // Check shields regardless of damage type
         int remaining = FactorLogic.ResolveToughness(FactorManager, character, finalDamage);
 
         if (remaining > 0) {
@@ -336,23 +422,17 @@ public partial class GameManager : Node {
 
         GameEvents.TriggerDamageDealt(character, damage, character.LP);
 
-        // Check for defeat and end game if necessary
+        // Check for defeat
         if (character.LP <= 0) {
             HandlePlayerDefeat(character);
         }
     }
 
-    // Fixed normal attack with proper dictionary access
+    // Combat actions with proper validation
     public void PerformNormalAttack(Character target) {
-        var current = StateManager.GetPlayer?.Invoke(StateManager.CurrentTurn);
-        if (current == null || target == null) return;
+        var current = GetCurrentPlayer();
+        if (!ValidateAction(current, target, "normal attack")) return;
 
-        if (!StateManager.CanAct()) {
-            ConsoleLog.Warn("Cannot perform normal attack - no actions remaining");
-            return;
-        }
-
-        // Use TryGetValue instead of GetValueOrDefault
         current.EquippedSlots.TryGetValue(Card.TYPE.BW, out Card baseWeapon);
         current.EquippedSlots.TryGetValue(Card.TYPE.SW, out Card secondaryWeapon);
 
@@ -362,7 +442,6 @@ public partial class GameManager : Node {
         }
 
         StateManager.TryAction(() => {
-            // Execute weapon effects
             baseWeapon?.Effect?.Invoke(current, target);
             secondaryWeapon?.Effect?.Invoke(current, target);
             
@@ -371,15 +450,40 @@ public partial class GameManager : Node {
         });
     }
 
-    // Enhanced equipment - allow during battle phase
+    public void UseCard(Card.TYPE slotType, Character target) {
+        var current = GetCurrentPlayer();
+        if (!ValidateAction(current, target, "use card")) return;
+
+        CharacterLogic.UseSlot(current, slotType, target);
+    }
+
+    private bool ValidateAction(Character current, Character target, string actionName) {
+        if (current == null) {
+            ConsoleLog.Warn($"Cannot {actionName} - no current player");
+            return false;
+        }
+
+        if (target == null) {
+            ConsoleLog.Warn($"Cannot {actionName} - no target specified");
+            return false;
+        }
+
+        if (!StateManager.CanAct()) {
+            ConsoleLog.Warn($"Cannot {actionName} - no actions remaining");
+            return false;
+        }
+
+        return true;
+    }
+
+    // Equipment with phase validation
     public void EquipCard(Character character, Card card) {
         if (character == null || card == null) {
             ConsoleLog.Warn("Cannot equip card - character or card is null");
             return;
         }
 
-        // Allow equipment during character selection and battle (hybrid gameplay)
-        if (CurrentPhase != GamePhase.CHARACTER_SELECTION && CurrentPhase != GamePhase.BATTLE) {
+        if (!CanEquipCards()) {
             ConsoleLog.Warn("Cannot equip cards outside of active gameplay");
             return;
         }
@@ -393,8 +497,7 @@ public partial class GameManager : Node {
             return;
         }
 
-        // Allow charm equipping during battle phase too
-        if (CurrentPhase != GamePhase.CHARACTER_SELECTION && CurrentPhase != GamePhase.BATTLE) {
+        if (!CanEquipCards()) {
             ConsoleLog.Warn("Cannot equip charms outside of active gameplay");
             return;
         }
@@ -402,11 +505,11 @@ public partial class GameManager : Node {
         CharmLogic.EquipCharm(character, charm);
     }
 
-    // Updated API for hybrid gameplay
+    // API for game state queries
     public bool CanEquipCards() => CurrentPhase == GamePhase.CHARACTER_SELECTION || CurrentPhase == GamePhase.BATTLE;
     public bool CanPerformActions() => CurrentPhase == GamePhase.BATTLE && GameInProgress;
 
-    // Add EndTurn method for manual turn ending
+    // Turn management
     public void EndTurn() {
         if (!GameInProgress || CurrentPhase != GamePhase.BATTLE) {
             ConsoleLog.Warn("Cannot end turn - game not in progress");
@@ -416,42 +519,24 @@ public partial class GameManager : Node {
         var currentPlayer = GetCurrentPlayer();
         ConsoleLog.Game($"{currentPlayer?.CharName ?? "Unknown"} ended their turn");
         
-        // FIXED LINE 413: Use GameEvents instead of direct event invocation
         GameEvents.TriggerTurnEnded(currentPlayer);
-        
-        // Switch to next turn
         StateManager.NextTurn();
-    }
-
-    // Add missing GetCurrentPlayer method
-    public Character GetCurrentPlayer() => StateManager.GetPlayer?.Invoke(StateManager.CurrentTurn);
-
-    // Enhanced card usage with validation
-    public void UseCard(Card.TYPE slotType, Character target) {
-        var current = GetCurrentPlayer();
-        if (current == null) {
-            ConsoleLog.Warn("No current player to use card");
-            return;
-        }
-
-        if (!StateManager.CanAct()) {
-            ConsoleLog.Warn("Cannot use card - no actions remaining");
-            return;
-        }
-
-        CharacterLogic.UseSlot(current, slotType, target);
     }
 
     // Game end handling
     public void HandlePlayerDefeat(Character defeated) {
+        if (defeated == null) return;
+        
         var winner = GetOpponent(defeated);
         CurrentPhase = GamePhase.GAME_OVER;
         GameInProgress = false;
         
-        ConsoleLog.Game($"{defeated.CharName} was defeated! {winner.CharName} wins!");
+        ConsoleLog.Game($"{defeated.CharName} was defeated! {winner?.CharName ?? "Unknown"} wins!");
         
         GameEvents.TriggerPlayerDefeated(defeated);
-        GameEvents.TriggerPlayerVictory(winner);
+        if (winner != null) {
+            GameEvents.TriggerPlayerVictory(winner);
+        }
         GameEvents.TriggerGameEnded();
         GameEvents.TriggerGamePhaseChanged("GAME_OVER");
     }
@@ -459,5 +544,22 @@ public partial class GameManager : Node {
     public void RestartGame() {
         ConsoleLog.Game("Restarting game...");
         StartGameSetup();
+    }
+
+    // Input handling for console toggle
+    public override void _UnhandledKeyInput(InputEvent @event) {
+        if (@event is InputEventKey keyEvent && keyEvent.Pressed) {
+            if (keyEvent.Keycode == Key.F1) {
+                consoleWindow?.ToggleVisibility();
+                GetViewport().SetInputAsHandled();
+            }
+        }
+    }
+
+    // Cleanup
+    public override void _ExitTree() {
+        Reset();
+        consoleWindow?.QueueFree();
+        Instance = null;
     }
 }
