@@ -1158,14 +1158,14 @@ namespace meph {
 
             // Define card type order for better organization
             var cardTypeOrder = new[] { 
-                Card.TYPE.C,    // Character card
-                Card.TYPE.BW,   // Basic Weapon
-                Card.TYPE.SW,   // Special Weapon  
-                Card.TYPE.W,    // Weapon
-                Card.TYPE.E,    // Equipment
-                Card.TYPE.P,    // Potion
-                Card.TYPE.Q,    // Quin cards
-                Card.TYPE.U     // Ultimate cards
+                Card.TYPE.C,    // Character Card
+                Card.TYPE.BW,   // Base Weapon Card
+                Card.TYPE.SW,   // Secondary Weapon Card  
+                Card.TYPE.W,    // W Skill Card
+                Card.TYPE.E,    // E Skill Card
+                Card.TYPE.P,    // Potion Card
+                Card.TYPE.Q,    // Q Skill Card
+                Card.TYPE.U     // Ultimate Card
             };
 
             // Show equipped cards organized by type
