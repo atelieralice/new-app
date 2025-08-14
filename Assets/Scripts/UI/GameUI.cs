@@ -515,7 +515,7 @@ namespace meph {
             GameEvents.OnCardEquipped += OnCardEquipped;
             GameEvents.OnCharmEquipped += OnCharmEquipped;
             GameEvents.OnDamageDealt += OnDamageDealt;
-            GameEvents.OnActionsChanged += OnActionsChanged;
+            GameEvents.OnActionsChanged += OnActionsChanged; // This should trigger the update
             GameEvents.OnPlayerVictory += OnPlayerVictory;
             GameEvents.OnGameEnded += OnGameEnded;
         }
@@ -869,7 +869,7 @@ namespace meph {
         private void OnTurnStarted(Character character) {
             UpdatePlayerResources(character);
             UpdateActionButtons();
-            UpdateCurrentTurnDisplay();
+            UpdateCurrentTurnDisplay(); // This will now show the correct actions
             
             // Refresh card/charm availability in Flexible Mode
             if (GameManager.Instance.IsFlexibleMode()) {
@@ -943,12 +943,15 @@ namespace meph {
 
         private void OnActionsChanged(int remaining) {
             UpdateActionButtons();
+            UpdateCurrentTurnDisplay(); // Force immediate display update
             
             // Refresh equipment options in Flexible Mode
             if (GameManager.Instance.IsFlexibleMode()) {
                 PopulateAvailableCards();
                 PopulateAvailableCharms();
             }
+            
+            ConsoleLog.Info($"Actions updated: {remaining} remaining"); // Debug log
         }
 
         private void OnPlayerVictory(Character winner) {
@@ -1041,8 +1044,14 @@ namespace meph {
         private void UpdateCurrentTurnDisplay() {
             var currentPlayer = GameManager.Instance.GetCurrentPlayer();
             if (currentPlayer != null) {
-                var actionsText = GameManager.Instance.IsFlexibleMode() ? 
-                    $" (Actions: {GameManager.Instance.StateManager?.ActionsRemaining ?? 0})" : "";
+                string actionsText = "";
+                
+                // In Flexible Mode, show actions remaining
+                if (GameManager.Instance.IsFlexibleMode()) {
+                    int actionsRemaining = GameManager.Instance.StateManager?.ActionsRemaining ?? 0;
+                    actionsText = $" (Actions: {actionsRemaining})";
+                }
+                
                 currentTurnLabel.Text = $"CURRENT TURN: {currentPlayer.CharName}{actionsText}";
                 currentTurnLabel.Modulate = currentPlayer == GameManager.Instance.Attacker ? Colors.Yellow : Colors.Cyan;
             }
