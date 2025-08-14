@@ -3,7 +3,44 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace meph {
+    
+    /// <summary>
+    /// Static utility class providing core charm equipment operations and management
+    /// Implements charm equipping, unequipping, and character stat integration
+    /// Serves as the primary interface for charm-related game logic operations
+    /// 
+    /// Core Functionality:
+    /// - Equipment Management: Charm equipping/unequipping with validation and conflict resolution
+    /// - Resource Integration: Automatic resource updates when charm bonuses affect maximum values
+    /// - Set Bonus Detection: Complete set validation and set bonus activation events
+    /// - Data Conversion: CharmData to runtime Charm instance transformation
+    /// - Preset Collections: Predefined charm sets for specific characters (Rok, Yu)
+    /// - Event Coordination: GameEvents integration for UI updates and logging
+    /// </summary>
     public static class CharmLogic {
+        
+        #region Equipment Management System
+        
+        /// <summary>
+        /// Equips a charm to the appropriate character slot with comprehensive validation
+        /// Prevents slot conflicts, applies resource bonuses, and manages set completion
+        /// Triggers equipment events for UI updates and game state synchronization
+        /// 
+        /// Equipment Process:
+        /// 1. Validate character and charm are not null
+        /// 2. Check for existing charm in target slot (prevent conflicts)
+        /// 3. Equip charm to character's EquippedCharms dictionary
+        /// 4. Apply resource bonuses (LP/EP/MP increases affect current values)
+        /// 5. Trigger equipment events for UI and logging
+        /// 6. Check for complete set bonus activation
+        /// 
+        /// Game Rules:
+        /// - Only one charm per slot type allowed
+        /// - Resource bonuses immediately increase current values
+        /// - Set bonuses activate when all 5 slots filled with matching set
+        /// </summary>
+        /// <param name="character">Character receiving the charm equipment</param>
+        /// <param name="charm">Charm to be equipped (null check performed)</param>
         public static void EquipCharm(Character character, Charm charm) {
             if (character == null || charm == null) {
                 ConsoleLog.Warn("Cannot equip charm - character or charm is null");
@@ -34,6 +71,23 @@ namespace meph {
             }
         }
 
+        /// <summary>
+        /// Unequips a charm from the specified character slot
+        /// Removes charm from equipment but preserves current resource values
+        /// Triggers unequipment events for UI updates and game state tracking
+        /// 
+        /// Unequipment Rules:
+        /// - Current resources (LP/EP/MP) are NOT reduced when unequipping
+        /// - Only maximum values change through computed properties
+        /// - Set bonuses are automatically lost when set becomes incomplete
+        /// - Events trigger for UI synchronization and logging
+        /// 
+        /// Resource Preservation Logic:
+        /// Game rule states that current resources should not decrease when unequipping,
+        /// only maximum values change, allowing characters to retain gained resources
+        /// </summary>
+        /// <param name="character">Character unequipping the charm</param>
+        /// <param name="slot">Equipment slot to unequip charm from</param>
         public static void UnequipCharm(Character character, CharmSlot slot) {
             if (character == null) return;
 
@@ -46,6 +100,21 @@ namespace meph {
             }
         }
 
+        /// <summary>
+        /// Updates character's current resources when charm bonuses increase maximum values
+        /// Implements game rule: when MaxLP/EP/MP increases, current values should also increase
+        /// Triggers resource gain events for UI updates and consistent game state tracking
+        /// 
+        /// Resource Update Rules:
+        /// - LP Bonus: Increases both MaxLP and current LP simultaneously
+        /// - EP Bonus: Increases both MaxEP and current EP simultaneously  
+        /// - MP Bonus: Increases both MaxMP and current MP simultaneously
+        /// - Only positive bonuses trigger updates (negative values ignored)
+        /// 
+        /// This ensures characters immediately benefit from resource-enhancing charms
+        /// </summary>
+        /// <param name="character">Character receiving the resource updates</param>
+        /// <param name="charm">Charm providing the resource bonuses</param>
         private static void UpdateResourcesAfterCharmEquip(Character character, Charm charm) {
             // When max LP/EP/MP increases, current values should also increase
             if (charm.LpBonus > 0) {
@@ -61,12 +130,33 @@ namespace meph {
                 GameEvents.TriggerResourceGained(character, charm.MpBonus, "MP");
             }
         }
+        
+        #endregion
 
+        #region Data Conversion System
+        
+        /// <summary>
+        /// Creates a runtime Charm instance from CharmData template
+        /// Transfers all properties from data template to runtime charm object
+        /// Used by charm factories and equipment systems for charm instantiation
+        /// 
+        /// Conversion Process:
+        /// 1. Create new Charm instance
+        /// 2. Copy identity properties (ID, name, description, set)
+        /// 3. Transfer all stat bonuses and specialized bonuses
+        /// 4. Set equipment slot assignment
+        /// 5. Return fully configured charm ready for equipment
+        /// 
+        /// This method bridges the gap between data templates and runtime objects,
+        /// enabling data-driven charm configuration and factory pattern usage
+        /// </summary>
+        /// <param name="data">CharmData template containing charm configuration</param>
+        /// <returns>Runtime Charm instance with all properties transferred</returns>
         public static Charm CreateCharmFromData(CharmData data) {
             return new Charm {
-                Id = data.charmId,           // Fixed: use charmId
-                Name = data.charmName,       // Fixed: use charmName
-                Description = data.charmDescription, // Fixed: use charmDescription
+                Id = data.charmId,
+                Name = data.charmName,
+                Description = data.charmDescription,
                 SetName = data.setName,
                 Slot = data.slot,
                 LpBonus = data.lpBonus,
@@ -85,9 +175,37 @@ namespace meph {
                 MpRecoveryBonus = data.mpRecoveryBonus
             };
         }
+        
+        #endregion
 
-        // Create preset charms for Rok and Yu
+        #region Preset Charm Collections
+        
+        /// <summary>
+        /// Static factory class for creating predefined charm sets for specific characters
+        /// Provides complete charm set definitions for testing, development, and default loadouts
+        /// Enables quick character setup with thematically appropriate and balanced charm builds
+        /// 
+        /// Character-Specific Sets:
+        /// - Rok: "Flames of Crimson Rage" - Burning damage enhancement and Fire essence synergy
+        /// - Yu: "Crystalized Dreams" - Freeze control, Ice damage bonuses, and resource sustainability
+        /// 
+        /// Each set provides complete 5-piece collections with thematic naming and balanced bonuses
+        /// </summary>
         public static class PresetCharms {
+            
+            /// <summary>
+            /// Creates Rok's "Flames of Crimson Rage" charm set
+            /// Fire essence themed set focused on burning damage enhancement and combat stats
+            /// 
+            /// Set Features:
+            /// - Universal Burning Damage: Each piece provides 1% BD bonus (5% total)
+            /// - Balanced Stat Distribution: LP, DEF, Essence DEF, Normal Damage, MP bonuses
+            /// - Fire Synergy: Enhances Rok's berserker mode and burning factor applications
+            /// - Set Bonus: "Flames of Crimson Rage" doubles BD bonus effectiveness (10% total)
+            /// 
+            /// Strategic Focus: Aggressive burning builds with enhanced survivability
+            /// </summary>
+            /// <returns>Complete 5-piece Rok charm set with Fire essence synergy</returns>
             public static List<Charm> CreateRokCharms() {
                 return new List<Charm> {
                     new Charm {
@@ -138,6 +256,20 @@ namespace meph {
                 };
             }
 
+            /// <summary>
+            /// Creates Yu's "Crystalized Dreams" charm set
+            /// Ice essence themed set focused on freeze control, Ice damage, and resource sustainability
+            /// 
+            /// Set Features:
+            /// - Ice Damage Specialization: Multiple pieces provide specific Ice damage bonuses
+            /// - Freeze Duration Enhancement: +1 turn to all freeze effects (Protection of Fear)
+            /// - MP Sustainability: 20 MP recovery per normal attack (Guilt of Betrayal)
+            /// - Weapon Synergy: Sword damage bonuses matching Yu's weapon type
+            /// - Defensive Balance: LP, EP, DEF, and Essence DEF distribution
+            /// 
+            /// Strategic Focus: Control-oriented builds with sustained resource management
+            /// </summary>
+            /// <returns>Complete 5-piece Yu charm set with Ice essence control synergy</returns>
             public static List<Charm> CreateYuCharms() {
                 return new List<Charm> {
                     new Charm {
@@ -192,5 +324,7 @@ namespace meph {
                 };
             }
         }
+        
+        #endregion
     }
 }
