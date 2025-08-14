@@ -15,6 +15,10 @@ run/main_scene="uid://cejekpj07wa7j"
 config/features=PackedStringArray("4.5", "C#", "GL Compatibility")
 boot_splash/show_image=false
 
+[display]
+
+window/subwindows/embed_subwindows=false
+
 [dotnet]
 
 project/assembly_name="new app"

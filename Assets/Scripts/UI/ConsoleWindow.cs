@@ -13,6 +13,9 @@ namespace meph
 
         public override void _Ready()
         {
+            // CRITICAL: Set native window properties FIRST, before anything else
+            SetupNativeWindow();
+            
             // Get the RichTextLabel by its unique name
             consoleLog = GetNode<RichTextLabel>("%ConsoleLog");
             
@@ -22,7 +25,6 @@ namespace meph
                 return;
             }
 
-            SetupNativeWindow();
             SetupWindowFeatures();
             ConnectSignals();
             
@@ -33,7 +35,7 @@ namespace meph
 
         private void SetupNativeWindow()
         {
-            // CRITICAL: Force native window behavior
+            // CRITICAL: Set ForceNative BEFORE window is displayed
             ForceNative = true;
             
             // CRITICAL: Disable subwindow embedding to make this a native OS window
@@ -48,14 +50,17 @@ namespace meph
             // Window positioning
             InitialPosition = WindowInitialPosition.CenterMainWindowScreen;
             
-            // Window behavior flags - FIXED: Use correct flag names
+            // Window behavior flags
             SetFlag(Flags.ResizeDisabled, false); // Allow resizing
             SetFlag(Flags.MinimizeDisabled, false); // Allow minimize
             SetFlag(Flags.MaximizeDisabled, false); // Allow maximize
             SetFlag(Flags.AlwaysOnTop, false); // Not always on top
             SetFlag(Flags.Transparent, false); // Opaque background
-            SetFlag(Flags.NoFocus, false); // Can be focused - FIXED: Use NoFocus instead of Unfocusable
+            SetFlag(Flags.NoFocus, false); // Can be focused
             SetFlag(Flags.ExcludeFromCapture, true); // Exclude from screenshots
+            
+            // Initially hide the window to prevent the ForceNative error
+            Visible = false;
         }
 
         private void SetupWindowFeatures()
@@ -109,14 +114,13 @@ namespace meph
 
         private void OnFocusEntered()
         {
-            // Visual feedback when window gains focus - FIXED: Window doesn't have Modulate
-            // Use alternative visual feedback through theme
+            // Visual feedback when window gains focus
             AddThemeColorOverride("background_color", new Color(1.0f, 1.0f, 1.0f, 1.0f));
         }
 
         private void OnFocusExited()
         {
-            // Slightly dim when window loses focus - FIXED: Window doesn't have Modulate
+            // Slightly dim when window loses focus
             AddThemeColorOverride("background_color", new Color(0.95f, 0.95f, 0.95f, 1.0f));
         }
 
@@ -172,7 +176,7 @@ namespace meph
             else
             {
                 Show();
-                GrabFocus(); // FIXED: Use GrabFocus() instead of deprecated MoveToForeground()
+                GrabFocus();
                 RequestAttention();
             }
         }
@@ -202,7 +206,7 @@ namespace meph
             var filename = $"console_log_{timestamp}.txt";
             var filepath = $"user://logs/{filename}";
             
-            // Create logs directory if it doesn't exist - FIXED: Use static method correctly
+            // Create logs directory if it doesn't exist
             DirAccess.MakeDirRecursiveAbsolute("user://logs");
             
             // Save console text
@@ -274,12 +278,12 @@ namespace meph
                 if (mouseButton.ButtonIndex == MouseButton.WheelUp)
                 {
                     AdjustFontSize(1);
-                    GetViewport().SetInputAsHandled(); // FIXED: Use GetViewport().SetInputAsHandled() instead of AcceptEvent()
+                    GetViewport().SetInputAsHandled();
                 }
                 else if (mouseButton.ButtonIndex == MouseButton.WheelDown)
                 {
                     AdjustFontSize(-1);
-                    GetViewport().SetInputAsHandled(); // FIXED: Use GetViewport().SetInputAsHandled() instead of AcceptEvent()
+                    GetViewport().SetInputAsHandled();
                 }
             }
         }
