@@ -64,19 +64,14 @@ public enum GameMode {
 /// </summary>
 public partial class GameManager : Node {
     
-    #region Singleton and Core References
+    #region Core References (REMOVED SINGLETON)
     
-    /// <summary>
-    /// Global singleton instance providing unified access to game management systems
-    /// Set during _Ready() and cleared during _ExitTree() for proper lifecycle management
-    /// Used by UI systems, combat logic, and utility classes for game state access
-    /// </summary>
-    public static GameManager Instance { get; private set; }
+    // REMOVED: public static GameManager Instance { get; private set; }
     
     /// <summary>
     /// Primary game UI controller managing interface updates and user interactions
     /// Handles phase-specific UI states and provides player action interfaces
-    /// Integrates with GameEvents for real-time status updates and feedback
+    /// Integrates with GameEvents system for real-time status updates and feedback
     /// </summary>
     private GameUI gameUI;
     
@@ -186,7 +181,7 @@ public partial class GameManager : Node {
     /// - Graceful degradation when optional components fail
     /// </summary>
     public override void _Ready() {
-        Instance = this;
+        // REMOVED: Instance = this;
 
         // Initialize core systems first
         InitializeCoreSystems();
@@ -1482,7 +1477,7 @@ public partial class GameManager : Node {
     public override void _ExitTree() {
         Reset();
         consoleWindow?.QueueFree();
-        Instance = null;
+        // REMOVED: Instance = null;
     }
     
     #endregion
