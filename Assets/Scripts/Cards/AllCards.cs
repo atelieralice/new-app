@@ -573,27 +573,26 @@ namespace meph {
         /// <summary>
         /// Creates Fierceful Recover potion
         /// 
-        /// Potion Card (P): Resource regeneration over time
-        /// No resource cost - consumable support item
+        /// Potion Card (P): Resource regeneration over time - SWIFT CARD
+        /// Swift: Can be used multiple times per turn without action cost
         /// 
         /// Effect: Grants 40 MP regeneration at the beginning of each turn for 4 turns
         /// Total: 160 MP over 4 turns for sustained ability usage
-        /// 
-        /// Future: Will be implemented as Swift Card for multiple uses per turn
         /// </summary>
-        /// <returns>MP regeneration potion card</returns>
+        /// <returns>MP regeneration swift potion card</returns>
         public static Card CreateFiercefulRecover() {
             return new Card {
                 Id = "fierceful_recover",
                 Name = "Fierceful Recover",
                 Type = Card.TYPE.P,
-                Description = "Your character recovers 40 MP at beginning of every Turn for 4 Turns.",
+                IsSwift = true, // FIXED: Now Swift card
+                Description = "SWIFT: Your character recovers 40 MP at beginning of every Turn for 4 Turns.",
                 Effect = (user, target) => {
                     var fm = GameManager.Instance?.FactorManager;
                     if (fm != null) {
                         // Sustained MP regeneration for extended ability usage
                         FactorLogic.AddMpRegeneration(fm, user, 4, 40);
-                        ConsoleLog.Combat($"{user.CharName} will recover 40 MP per turn for 4 turns");
+                        ConsoleLog.Combat($"{user.CharName} will recover 40 MP per turn for 4 turns (Swift)");
                     }
                 }
             };
@@ -602,25 +601,24 @@ namespace meph {
         /// <summary>
         /// Creates Ultimate Head Start potion
         /// 
-        /// Potion Card (P): Ultimate Point acceleration
-        /// No resource cost - strategic timing support
+        /// Potion Card (P): Ultimate Point acceleration - SWIFT CARD
+        /// Swift: Can be used multiple times per turn without action cost
         /// 
         /// Effect: Immediately grants 1 UP charge
         /// Allows faster access to Ultimate abilities for strategic timing
-        /// 
-        /// Future: Will be implemented as Swift Card for multiple uses per turn
         /// </summary>
-        /// <returns>UP acceleration potion card</returns>
+        /// <returns>UP acceleration swift potion card</returns>
         public static Card CreateUltimateHeadStart() {
             return new Card {
                 Id = "ultimate_head_start",
                 Name = "Ultimate Head Start",
                 Type = Card.TYPE.P,
-                Description = "Your character gains 1 UP charge immediately.",
+                IsSwift = true, // FIXED: Now Swift card
+                Description = "SWIFT: Your character gains 1 UP charge immediately.",
                 Effect = (user, target) => {
                     // Immediate UP gain for ultimate timing control
                     CharacterLogic.GainResource(user, "UP", 1);
-                    ConsoleLog.Combat($"{user.CharName} gained 1 UP charge immediately");
+                    ConsoleLog.Combat($"{user.CharName} gained 1 UP charge immediately (Swift)");
                 }
             };
         }

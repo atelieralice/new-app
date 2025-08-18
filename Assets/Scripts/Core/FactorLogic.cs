@@ -574,24 +574,33 @@ namespace meph {
         /// <param name="character">Character whose shields will absorb damage</param>
         /// <param name="incomingDamage">Total damage before shield absorption</param>
         /// <returns>Remaining damage after all shields have been processed</returns>
-        public static int ResolveToughness(FactorManager fm, Character character, int incomingDamage) {
-            var shields = fm.GetFactors(character, Character.STATUS_EFFECT.TOUGHNESS);
-            int remainingDamage = incomingDamage;
+        public static int ResolveToughness(FactorManager factorManager, Character character, int damage) {
+            if (factorManager == null || character == null || damage <= 0) return damage;
             
-            foreach (var shield in shields.ToList()) {
-                int dp = GetParamOrDefault(shield, ParamKeys.DP, 100);
+            // FIXED: Get ALL shield instances, not just first
+            var shields = factorManager.GetFactors(character, Character.STATUS_EFFECT.TOUGHNESS);
+            if (shields.Count == 0) return damage;
+            
+            int remainingDamage = damage;
+            
+            // FIXED: Process shields sequentially until damage is absorbed or shields depleted
+            for (int i = 0; i < shields.Count && remainingDamage > 0; i++) {
+                var shield = shields[i];
+                int shieldDP = shield.Params.GetValueOrDefault(ParamKeys.DP, 0);
                 
-                if (remainingDamage >= dp) {
-                    // Shield breaks
-                    remainingDamage -= dp;
-                    fm.RemoveFactorInstance(character, Character.STATUS_EFFECT.TOUGHNESS, shields.IndexOf(shield));
-                    ConsoleLog.Combat($"{character.CharName}'s shield absorbed {dp} damage and broke");
-                } else {
-                    // Shield absorbs all damage
-                    shield.Params[ParamKeys.DP] = dp - remainingDamage;
-                    remainingDamage = 0;
-                    ConsoleLog.Combat($"{character.CharName}'s shield absorbed {incomingDamage} damage");
-                    break;
+                if (shieldDP > 0) {
+                    int damageToShield = Math.Min(remainingDamage, shieldDP);
+                    remainingDamage -= damageToShield;
+                    shield.Params[ParamKeys.DP] = shieldDP - damageToShield;
+                    
+                    ConsoleLog.Combat($"Shield {i+1} absorbed {damageToShield} damage ({shieldDP - damageToShield} DP remaining)");
+                    
+                    // Remove shield if depleted
+                    if (shield.Params[ParamKeys.DP] <= 0) {
+                        factorManager.RemoveFactorInstance(character, Character.STATUS_EFFECT.TOUGHNESS, i);
+                        ConsoleLog.Combat($"Shield {i+1} destroyed");
+                        i--; // Adjust index after removal
+                    }
                 }
             }
             

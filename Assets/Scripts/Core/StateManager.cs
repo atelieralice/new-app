@@ -182,8 +182,8 @@ namespace meph {
         
         /// <summary>
         /// Attempts to execute an action within the current turn's action economy constraints
+        /// FIXED: Now properly handles Swift Actions from Potion cards
         /// Validates action availability and applies appropriate action cost based on Swift Action status
-        /// Handles action counting, turn locking, and event triggering for action state changes
         /// 
         /// Action Economy Rules:
         /// - Standard Actions: Cost 1 action, limited to ActionsRemaining count
@@ -191,23 +191,12 @@ namespace meph {
         /// - Action Exhaustion: Turn becomes locked when ActionsRemaining reaches 0
         /// - Validation: Actions blocked when turn is locked or no actions remain
         /// 
-        /// Action Processing:
-        /// 1. Validate action availability (unless Swift Action)
-        /// 2. Execute provided action delegate
-        /// 3. Apply action cost (decrement ActionsRemaining for standard actions)
-        /// 4. Update UI through OnActionsChanged event
-        /// 5. Lock turn if no actions remain after execution
-        /// 
-        /// Swift Action Mechanics:
-        /// - Bypass action count validation and cost application
-        /// - Allow unlimited usage within single turn
-        /// - Used for Potion Cards and special ability effects
-        /// - Do not trigger action exhaustion or turn locking
+        /// FIXED: Swift cards (Potions) can be used multiple times without action cost
         /// </summary>
         /// <param name="action">Action delegate to execute if action economy permits</param>
         /// <param name="isSwift">Whether this is a Swift Action that bypasses action costs</param>
         public void TryAction(Action action, bool isSwift = false) {
-            // Validate action availability for standard actions
+            // FIXED: Validate action availability for standard actions only
             if (!CanAct() && !isSwift) {
                 ConsoleLog.Warn("Cannot act, no actions remaining.");
                 return;
@@ -216,7 +205,7 @@ namespace meph {
             // Execute the requested action
             action();
 
-            // Apply action cost and state changes for standard actions
+            // Apply action cost and state changes for standard actions only
             if (!isSwift) {
                 ActionsRemaining--;
                 OnActionsChanged?.Invoke(ActionsRemaining);
@@ -225,6 +214,9 @@ namespace meph {
                 if (ActionsRemaining <= 0) {
                     LockAction();
                 }
+            } else {
+                // FIXED: Log Swift action usage without consuming actions
+                ConsoleLog.Action("Swift action executed - no action cost");
             }
         }
 
