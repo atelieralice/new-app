@@ -64,9 +64,14 @@ public enum GameMode {
 /// </summary>
 public partial class GameManager : Node {
     
-    #region Core References (REMOVED SINGLETON)
+    #region Core References
     
-    // REMOVED: public static GameManager Instance { get; private set; }
+    /// <summary>
+    /// Singleton instance providing global access to GameManager
+    /// Enables unified access for UI, combat systems, and game state management
+    /// Set during _Ready() and cleared during _ExitTree() for proper lifecycle management
+    /// </summary>
+    public static GameManager Instance { get; private set; }
     
     /// <summary>
     /// Primary game UI controller managing interface updates and user interactions
@@ -181,7 +186,7 @@ public partial class GameManager : Node {
     /// - Graceful degradation when optional components fail
     /// </summary>
     public override void _Ready() {
-        // REMOVED: Instance = this;
+        Instance = this;
 
         // Initialize core systems first
         InitializeCoreSystems();
@@ -452,7 +457,7 @@ public partial class GameManager : Node {
     private void InitializeStateEvents() {
         StateManager.OnTurnStarted += (turn, player) => {
             ResolveTurnStart(player, GetOpponent(player));
-            GameEvents.TriggerTurnStarted(player);
+            // REMOVED DUPLICATE: GameEvents.TriggerTurnStarted(player);
         };
         
         StateManager.OnTurnEnded += (turn, player) => {
@@ -894,7 +899,7 @@ public partial class GameManager : Node {
         ConsoleLog.Game($"{current.CharName}'s turn started");
 
         try {
-            // Execute character-specific turn start effects
+            // Execute character-specific turn start effects ONCE
             CharacterPassives.ExecuteTurnStartEffects(current);
 
             // Resolve per-turn effects in correct order
@@ -906,7 +911,7 @@ public partial class GameManager : Node {
             FactorLogic.ResolveBurning(FactorManager, current);
             FactorLogic.ResolveStorm(FactorManager, current);
             
-            // Age all factors
+            // Age all factors ONCE
             FactorManager.UpdateFactors();
 
             // Regenerate resources
@@ -953,9 +958,12 @@ public partial class GameManager : Node {
         int mpRegen = Mathf.RoundToInt(character.MaxMP * 0.02f);
         character.MP = Mathf.Min(character.MP + mpRegen, character.MaxMP);
 
-        // Trigger events only for actual regeneration
-        if (character.EP > oldEP || character.MP > oldMP) {
-            GameEvents.TriggerResourceRegenerated(character, character.EP - oldEP, character.MP - oldMP);
+        // FIXED: Only trigger event if there was actual regeneration AND amounts > 0
+        int actualEPGain = character.EP - oldEP;
+        int actualMPGain = character.MP - oldMP;
+        
+        if (actualEPGain > 0 || actualMPGain > 0) {
+            GameEvents.TriggerResourceRegenerated(character, actualEPGain, actualMPGain);
         }
     }
     
@@ -1368,9 +1376,10 @@ public partial class GameManager : Node {
         }
 
         var currentPlayer = GetCurrentPlayer();
-        ConsoleLog.Game($"{currentPlayer?.CharName ?? "Unknown"} ended their turn");
+        // REMOVED DUPLICATE: ConsoleLog.Game($"{currentPlayer?.CharName ?? "Unknown"} ended their turn");
         
-        GameEvents.TriggerTurnEnded(currentPlayer);
+        // Don't trigger duplicate event - StateManager will handle this
+        // REMOVED: GameEvents.TriggerTurnEnded(currentPlayer);
         StateManager.NextTurn();
     }
     
@@ -1477,7 +1486,7 @@ public partial class GameManager : Node {
     public override void _ExitTree() {
         Reset();
         consoleWindow?.QueueFree();
-        // REMOVED: Instance = null;
+        Instance = null;
     }
     
     #endregion
