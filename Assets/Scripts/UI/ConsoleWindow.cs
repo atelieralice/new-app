@@ -106,6 +106,9 @@ namespace meph
 
         private void SetupWindowFeatures()
         {
+            // REMOVE THIS SECTION - it's duplicating and overriding the scroll settings
+            // that are already properly set in CreateConsoleLogProgrammatically()
+            /*
             // Configure console RichTextLabel
             if (consoleLog != null)
             {
@@ -116,6 +119,7 @@ namespace meph
                 consoleLog.SelectionEnabled = true;
                 consoleLog.ContextMenuEnabled = true;
             }
+            */
             
             // Find UI elements if they exist (from scene)
             clearButton = GetNodeOrNull<Button>("%ClearButton");

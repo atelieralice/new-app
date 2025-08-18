@@ -8,22 +8,32 @@ position = Vector2i(0, 36)
 script = ExtResource("1_6imxn")
 
 [node name="BG" type="Panel" parent="."]
-anchors_preset = -1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 metadata/_edit_use_anchors_ = true
 metadata/_edit_lock_ = true
 
-[node name="ConsoleLog" type="RichTextLabel" parent="BG"]
-unique_name_in_owner = true
+[node name="ScrollContainer" type="ScrollContainer" parent="BG"]
 layout_mode = 1
-anchors_preset = -1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+follow_focus = true
+
+[node name="ConsoleLog" type="RichTextLabel" parent="BG/ScrollContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 theme_override_font_sizes/normal_font_size = 12
 theme_override_font_sizes/bold_font_size = 12
 theme_override_font_sizes/bold_italics_font_size = 12
 theme_override_font_sizes/italics_font_size = 12
 theme_override_font_sizes/mono_font_size = 12
+bbcode_enabled = true
 text = "placeholder"
-metadata/_edit_use_anchors_ = true
