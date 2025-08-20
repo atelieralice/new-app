@@ -47,16 +47,19 @@ namespace meph {
         }
 
         public static void AddFreeze ( FactorManager fm, Character character, int FT = 2 ) {
+            if ( IsStormed ( fm, character ) ) return;
             var parameters = new Dictionary<string, int> { { ParamKeys.FT, FT } };
             fm.ApplyFactor ( character, STATUS_EFFECT.FREEZE, FT, parameters );
         }
 
-        public static void FreezeCard ( Character character, Card.TYPE slotName, int FT ) {
+        public static void FreezeCard ( FactorManager fm, Character character, Card.TYPE slotName, int FT ) {
+            if ( IsStormed ( fm, character ) ) return;
             if ( character.EquippedSlots.TryGetValue ( slotName, out var card ) ) {
                 card.Freeze ( FT );
             }
         }
 
+        // Shouldn't be used as there are no characters that directly unfreeze a card
         public static void UnfreezeCard ( Character character, Card.TYPE slotName ) {
             if ( character.EquippedSlots.TryGetValue ( slotName, out var card ) ) {
                 card.Unfreeze ( );
