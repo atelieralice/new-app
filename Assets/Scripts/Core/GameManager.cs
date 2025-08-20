@@ -36,14 +36,20 @@ public partial class GameManager : Node {
 
     // Apply per-turn effects, then age or terminate factors
     private void ResolveTurnStart ( Character current, Character other ) {
-        if ( current == null ) { factorManager.UpdateFactors ( ); return; }
-        FactorLogic.ResolveHealing ( factorManager, current, other );
-        if ( other != null ) {
+        // Update factors for both sides
+        if ( current != null && other != null ) {
+            FactorLogic.ResolveHealing ( factorManager, current, other );
             FactorLogic.ResolveRecharge ( factorManager, current, other );
             FactorLogic.ResolveGrowth ( factorManager, current, other );
+            FactorLogic.ResolveBurning ( factorManager, current );
+            FactorLogic.ResolveStorm ( factorManager, current );
+
+            FactorLogic.ResolveHealing ( factorManager, other, current );
+            FactorLogic.ResolveRecharge ( factorManager, other, current );
+            FactorLogic.ResolveGrowth ( factorManager, other, current );
+            FactorLogic.ResolveBurning ( factorManager, other );
+            FactorLogic.ResolveStorm ( factorManager, other );
         }
-        FactorLogic.ResolveBurning ( factorManager, current );
-        FactorLogic.ResolveStorm ( factorManager, current );
         factorManager.UpdateFactors ( );
     }
 
