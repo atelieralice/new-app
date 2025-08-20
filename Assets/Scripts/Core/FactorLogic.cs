@@ -11,53 +11,53 @@ namespace meph {
         private static bool IsStormed ( FactorManager fm, Character target ) =>
             fm.GetFactors ( target, STATUS_EFFECT.STORM ).Count > 0;
 
-        public static void AddToughness ( FactorManager fm, Character character, int duration = 2, int dp = 100 ) {
+        public static void AddToughness ( FactorManager fm, Character character, int duration = 2, int DP = 100 ) {
             if ( IsStormed ( fm, character ) ) return;
-            var parameters = new Dictionary<string, int> { { ParamKeys.DP, dp } };
+            var parameters = new Dictionary<string, int> { { ParamKeys.DP, DP } };
             fm.ApplyFactor ( character, STATUS_EFFECT.TOUGHNESS, duration, parameters );
         }
 
-        public static void AddHealing ( FactorManager fm, Character character, int duration = 2, int ha = 100 ) {
+        public static void AddHealing ( FactorManager fm, Character character, int duration = 2, int HA = 100 ) {
             if ( IsStormed ( fm, character ) ) return;
-            var parameters = new Dictionary<string, int> { { ParamKeys.HA, ha } };
+            var parameters = new Dictionary<string, int> { { ParamKeys.HA, HA } };
             fm.ApplyFactor ( character, STATUS_EFFECT.HEALING, duration, parameters );
         }
 
-        public static void AddRecharge ( FactorManager fm, Character character, int duration = 2, int recharge = 150 ) {
+        public static void AddRecharge ( FactorManager fm, Character character, int duration = 2, int RA = 150 ) {
             if ( IsStormed ( fm, character ) ) return;
-            var parameters = new Dictionary<string, int> { { ParamKeys.RA, recharge } };
+            var parameters = new Dictionary<string, int> { { ParamKeys.RA, RA } };
             fm.ApplyFactor ( character, STATUS_EFFECT.RECHARGE, duration, parameters );
         }
 
-        public static void AddGrowth ( FactorManager fm, Character character, int duration = 2, int growthMp = 100 ) {
+        public static void AddGrowth ( FactorManager fm, Character character, int duration = 2, int GA = 100 ) {
             if ( IsStormed ( fm, character ) ) return;
-            var parameters = new Dictionary<string, int> { { ParamKeys.MP, growthMp } };
+            var parameters = new Dictionary<string, int> { { ParamKeys.GA, GA } };
             fm.ApplyFactor ( character, STATUS_EFFECT.GROWTH, duration, parameters );
         }
 
-        public static void AddStorm ( FactorManager fm, Character character, int duration = 2, int stormDamage = 50 ) {
-            var parameters = new Dictionary<string, int> { { ParamKeys.SD, stormDamage } };
+        public static void AddStorm ( FactorManager fm, Character character, int duration = 2, int SD = 50 ) {
+            var parameters = new Dictionary<string, int> { { ParamKeys.SD, SD } };
             fm.ApplyFactor ( character, STATUS_EFFECT.STORM, duration, parameters );
         }
 
-        public static void AddBurning ( FactorManager fm, Character character, int duration = 2, int bdPercent = 2 ) {
+        public static void AddBurning ( FactorManager fm, Character character, int duration = 2, int BD = 2 ) {
             if ( IsStormed ( fm, character ) ) return;
-            var parameters = new Dictionary<string, int> { { ParamKeys.BD, bdPercent } };
+            var parameters = new Dictionary<string, int> { { ParamKeys.BD, BD } };
             fm.ApplyFactor ( character, STATUS_EFFECT.BURNING, duration, parameters );
         }
 
-        public static void AddFreeze ( FactorManager fm, Character character, int duration = 2 ) {
-            var parameters = new Dictionary<string, int> { { ParamKeys.FT, duration } };
-            fm.ApplyFactor ( character, STATUS_EFFECT.FREEZE, duration, parameters );
+        public static void AddFreeze ( FactorManager fm, Character character, int FT = 2 ) {
+            var parameters = new Dictionary<string, int> { { ParamKeys.FT, FT } };
+            fm.ApplyFactor ( character, STATUS_EFFECT.FREEZE, FT, parameters );
         }
 
-        public static void FreezeCard ( Character character, Card.TYPE slotName, int duration ) {
+        public static void FreezeCard ( Character character, Card.TYPE slotName, int FT ) {
             if ( character.EquippedSlots.TryGetValue ( slotName, out var card ) ) {
-                card.Freeze ( duration );
+                card.Freeze ( FT );
             }
         }
 
-        public static void UnfreezeCard ( Character character, Card.TYPE slotName, int duration ) {
+        public static void UnfreezeCard ( Character character, Card.TYPE slotName ) {
             if ( character.EquippedSlots.TryGetValue ( slotName, out var card ) ) {
                 card.Unfreeze ( );
             }
@@ -110,18 +110,18 @@ namespace meph {
         public static void ResolveHealing ( FactorManager fm, Character character, Character target ) {
             var heals = fm.GetFactors ( character, STATUS_EFFECT.HEALING );
             for ( int i = 0; i < heals.Count; i++ ) {
-                int ha = GetParamOrDefault ( heals[i], ParamKeys.HA, 100 );
-                character.LP = Math.Min ( character.LP + ha, character.MaxLP );
+                int HA = GetParamOrDefault ( heals[i], ParamKeys.HA, 100 );
+                character.LP = Math.Min ( character.LP + HA, character.MaxLP );
                 if ( target != null )
-                    target.LP = Math.Max ( target.LP - ( ha / 2 ), 0 );
+                    target.LP = Math.Max ( target.LP - ( HA / 2 ), 0 );
             }
         }
 
         public static void ResolveRecharge ( FactorManager fm, Character character, Character target ) {
             var recharges = fm.GetFactors ( character, STATUS_EFFECT.RECHARGE );
             for ( int i = 0; i < recharges.Count; i++ ) {
-                int amount = GetParamOrDefault ( recharges[i], ParamKeys.RA, 150 );
-                int steal = Math.Min ( amount, target.EP );
+                int RA = GetParamOrDefault ( recharges[i], ParamKeys.RA, 150 );
+                int steal = Math.Min ( RA, target.EP );
                 character.EP = Math.Min ( character.EP + steal, character.MaxEP );
                 target.EP -= steal;
             }
@@ -130,8 +130,8 @@ namespace meph {
         public static void ResolveGrowth ( FactorManager fm, Character character, Character target ) {
             var growths = fm.GetFactors ( character, STATUS_EFFECT.GROWTH );
             for ( int i = 0; i < growths.Count; i++ ) {
-                int amount = GetParamOrDefault ( growths[i], ParamKeys.MP, 100 );
-                int steal = Math.Min ( amount, target.MP );
+                int GA = GetParamOrDefault ( growths[i], ParamKeys.GA, 100 );
+                int steal = Math.Min ( GA, target.MP );
                 character.MP = Math.Min ( character.MP + steal, character.MaxMP );
                 target.MP -= steal;
             }
@@ -141,25 +141,25 @@ namespace meph {
             var storms = fm.GetFactors ( target, STATUS_EFFECT.STORM );
             if ( storms.Count == 0 ) return;
 
-            int totalDmg = 0;
+            int totalSD = 0;
             for ( int i = 0; i < storms.Count; i++ )
-                totalDmg += GetParamOrDefault ( storms[i], ParamKeys.SD, 50 );
+                totalSD += GetParamOrDefault ( storms[i], ParamKeys.SD, 50 );
 
-            if ( totalDmg > 0 )
-                GameManager.ApplyDamage ( fm, target, totalDmg );
+            if ( totalSD > 0 )
+                GameManager.ApplyDamage ( fm, target, totalSD );
         }
 
         public static void ResolveBurning ( FactorManager fm, Character target ) {
             var burns = fm.GetFactors ( target, STATUS_EFFECT.BURNING );
             if ( burns.Count == 0 ) return;
 
-            int totalPercent = 0;
+            int totalBD = 0;
             for ( int i = 0; i < burns.Count; i++ )
-                totalPercent += GetParamOrDefault ( burns[i], ParamKeys.BD, 2 );
+                totalBD += GetParamOrDefault ( burns[i], ParamKeys.BD, 2 );
 
-            if ( totalPercent <= 0 ) return;
+            if ( totalBD <= 0 ) return;
 
-            int dmg = target.MaxLP * totalPercent / 100;
+            int dmg = target.MaxLP * totalBD / 100;
             GameManager.ApplyDamage ( fm, target, dmg );
         }
 

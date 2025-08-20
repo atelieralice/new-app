@@ -7,21 +7,21 @@ namespace meph {
             // Null checks
             if ( card == null || character == null ) return;
             if ( character.EquippedSlots.TryGetValue ( card.Type, out Card value ) && value != null ) {
-                GD.Print ( $"Slot {card.Type} is already occupied." );
+                ConsoleLog.Warn ( $"Slot {card.Type} is already occupied." );
                 return;
             }
             // Equip the card to the slot
             character.EquippedSlots[card.Type] = card;
-            GD.Print ( $"{character.CharName} equipped {card.Name} to {card.Type} slot." );
+            ConsoleLog.Info ( $"{character.CharName} equipped {card.Name} to {card.Type} slot." );
         }
 
         public static void UseSlot ( Character character, Card.TYPE slotType, Character user, Character target ) {
             if ( character.EquippedSlots.TryGetValue ( slotType, out Card card ) && card != null ) {
                 // Execute the card's effect
                 card.Effect?.Invoke ( user, target );
-                GD.Print ( $"{user.CharName} used {card.Name} from {slotType} slot on {target.CharName}." );
+                ConsoleLog.Info ( $"{user.CharName} used {card.Name} from {slotType} slot on {target.CharName}." );
             } else {
-                GD.Print ( $"No card equipped in {slotType} slot." );
+                ConsoleLog.Warn ( $"No card equipped in {slotType} slot." );
             }
         }
     }
