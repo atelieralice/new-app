@@ -31,5 +31,13 @@ namespace meph {
             IsFrozen = false;
             FreezeDuration = 0;
         }
+
+        public void TickFreeze ( ) {
+            if ( IsFrozen ) {
+                FreezeDuration--;
+                if ( FreezeDuration <= 0 )
+                    Unfreeze ( );
+            }
+        }
     }
 }

@@ -43,12 +43,14 @@ public partial class GameManager : Node {
             FactorLogic.ResolveGrowth ( factorManager, current, other );
             FactorLogic.ResolveBurning ( factorManager, current );
             FactorLogic.ResolveStorm ( factorManager, current );
+            FactorLogic.ResolveCardFreeze ( current );
 
             FactorLogic.ResolveHealing ( factorManager, other, current );
             FactorLogic.ResolveRecharge ( factorManager, other, current );
             FactorLogic.ResolveGrowth ( factorManager, other, current );
             FactorLogic.ResolveBurning ( factorManager, other );
             FactorLogic.ResolveStorm ( factorManager, other );
+            FactorLogic.ResolveCardFreeze ( other );
         }
         factorManager.UpdateFactors ( );
     }

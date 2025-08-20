@@ -51,8 +51,17 @@ namespace meph {
             fm.ApplyFactor ( character, STATUS_EFFECT.FREEZE, duration, parameters );
         }
 
-        public static void FreezeCard ( Card card, int duration ) => card.Freeze ( duration );
-        public static void UnfreezeCard ( Card card ) => card.Unfreeze ( );
+        public static void FreezeCard ( Character character, Card.TYPE slotName, int duration ) {
+            if ( character.EquippedSlots.TryGetValue ( slotName, out var card ) ) {
+                card.Freeze ( duration );
+            }
+        }
+
+        public static void UnfreezeCard ( Character character, Card.TYPE slotName, int duration ) {
+            if ( character.EquippedSlots.TryGetValue ( slotName, out var card ) ) {
+                card.Unfreeze ( );
+            }
+        }
 
         public static int ResolveToughness ( FactorManager fm, Character character, int damage ) {
             if ( damage <= 0 ) return 0;
@@ -152,6 +161,12 @@ namespace meph {
 
             int dmg = target.MaxLP * totalPercent / 100;
             GameManager.ApplyDamage ( fm, target, dmg );
+        }
+
+        public static void ResolveCardFreeze ( Character character ) {
+            foreach ( var card in character.EquippedSlots.Values ) {
+                card.TickFreeze ( );
+            }
         }
     }
 }
