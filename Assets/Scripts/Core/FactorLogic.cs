@@ -106,8 +106,10 @@ namespace meph {
             return 0;
         }
 
-        public static int GetToughnessEarthBonus ( FactorManager fm, Character character ) =>
-            fm.GetFactors ( character, STATUS_EFFECT.TOUGHNESS ).Count > 0 ? 150 : 0;
+        public static int GetToughnessEarthBonus ( FactorManager fm, Character character ) {
+            var shields = fm.GetFactors ( character, STATUS_EFFECT.TOUGHNESS );
+            return shields.Count * 150;
+        }
 
         // Healing: healer gains HA (capped), target loses HA/2 (not damage; bypasses shields).
         public static void ResolveHealing ( FactorManager fm, Character character, Character target ) {
