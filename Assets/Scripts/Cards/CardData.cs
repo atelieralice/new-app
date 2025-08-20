@@ -1,7 +1,6 @@
 using Godot;
 
 namespace meph {
-
     [GlobalClass]
     public partial class CardData : Resource {
         [Export] public string id;

@@ -1,7 +1,6 @@
 using System;
 using Godot;
 
-
 // This file handles the game state
 namespace meph {
 

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Godot;
 
 namespace meph {
-
     [GlobalClass]
     public partial class CharacterData : Resource {
         [Export] public string charName;

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 
-
 // We could implement an interface like ITargetableEntity for future characters' skills (wink wink!). Just a reminder
 // For now I'll just go along with what I wrote, doing stuff will be faster than thinking a very complex system for that
 namespace meph {

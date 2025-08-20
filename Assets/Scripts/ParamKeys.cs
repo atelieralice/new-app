@@ -33,7 +33,7 @@ namespace meph {
         public const string HA = "HA";   // Heal Amount
         public const string RA = "RA";   // Recharge Amount
         public const string GA = "GA";   // Growth Amount
-        public const string SD = "SD";   // Storm damage per tick
+        public const string SD = "SD";   // Storm Damage
         public const string ST = "ST";   // Storm Time
         public const string BD = "BD";   // Burn Damage
         public const string BT = "BT";   // Burning Time

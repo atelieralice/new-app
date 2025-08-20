@@ -4,7 +4,6 @@ using static meph.CharacterCreator;
 using static meph.CharacterLogic;
 using static meph.Character;
 
-
 // Basically GameManager.cs but for debugging purposes
 public partial class Debug : Node {
     StateManager stateManager;

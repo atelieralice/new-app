@@ -4,7 +4,6 @@ using static meph.CharacterCreator;
 using static meph.CharacterLogic;
 using static meph.Character;
 
-
 // Main entry point node
 public partial class GameManager : Node {
     StateManager stateManager;
@@ -24,7 +23,7 @@ public partial class GameManager : Node {
     }
 
     public static void ApplyDamage ( FactorManager factorManager, Character character, int damage ) {
-        if ( damage <= 0 || character == null ) return;
+        if ( character == null || damage <= 0 ) return;
         int remaining = FactorLogic.ResolveToughness ( factorManager, character, damage );
         if ( remaining > 0 )
             character.LP = Mathf.Max ( character.LP - remaining, 0 );
@@ -35,20 +34,16 @@ public partial class GameManager : Node {
     private void OnDefenderTurnHandler ( ) { ResolveTurnStart ( Defender, Attacker ); }
     private void OnActionLockHandler ( ) { }
 
-    // Apply per-turn effects, then age/prune factors
+    // Apply per-turn effects, then age or terminate factors
     private void ResolveTurnStart ( Character current, Character other ) {
         if ( current == null ) { factorManager.UpdateFactors ( ); return; }
-
-        // Per-turn ticks use current instances
         FactorLogic.ResolveHealing ( factorManager, current, other );
         if ( other != null ) {
             FactorLogic.ResolveRecharge ( factorManager, current, other );
             FactorLogic.ResolveGrowth ( factorManager, current, other );
         }
-        FactorLogic.ResolveBurning ( factorManager, current ); // tick on current
-        FactorLogic.ResolveStorm ( factorManager, current ); // tick on current
-
-        // Then decrement durations and remove expired
+        FactorLogic.ResolveBurning ( factorManager, current );
+        FactorLogic.ResolveStorm ( factorManager, current );
         factorManager.UpdateFactors ( );
     }
 

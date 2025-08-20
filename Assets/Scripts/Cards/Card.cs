@@ -1,7 +1,6 @@
 using Godot;
 using System.Collections.Generic;
 
-
 namespace meph {
     public delegate void CardEffect ( Character user, Character target );
 
