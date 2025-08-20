@@ -13,18 +13,6 @@ namespace meph {
         public Dictionary<string, int> Params { get; internal set; } = new ( );
     }
 
-    // Centralized string keys for FactorInstance.Params to avoid magic strings.
-    // Keep additions here so FactorLogic and cards stay consistent.
-    public static class ParamKeys {
-        public const string DP = "DP";   // Damage Prevention / Shield points
-        public const string HA = "HA";   // Heal Amount
-        public const string BD = "BD";   // Burn Damage percent (of MaxLP)
-        public const string FD = "FD";   // Freeze Duration (turns)
-        public const string RC = "RC";   // Recharge amount
-        public const string SD = "SD";   // Storm damage per tick
-        public const string MP = "MP";   // Growth: MP amount
-    }
-
     // FactorManager owns storage of active effects per character.
     // Design:
     // - All durations are instance-based (each application is its own timer).

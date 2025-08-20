@@ -25,7 +25,7 @@ namespace meph {
 
         public static void AddRecharge ( FactorManager fm, Character character, int duration = 2, int recharge = 150 ) {
             if ( IsStormed ( fm, character ) ) return;
-            var parameters = new Dictionary<string, int> { { ParamKeys.RC, recharge } };
+            var parameters = new Dictionary<string, int> { { ParamKeys.RA, recharge } };
             fm.ApplyFactor ( character, STATUS_EFFECT.RECHARGE, duration, parameters );
         }
 
@@ -47,7 +47,7 @@ namespace meph {
         }
 
         public static void AddFreeze ( FactorManager fm, Character character, int duration = 2 ) {
-            var parameters = new Dictionary<string, int> { { ParamKeys.FD, duration } };
+            var parameters = new Dictionary<string, int> { { ParamKeys.FT, duration } };
             fm.ApplyFactor ( character, STATUS_EFFECT.FREEZE, duration, parameters );
         }
 
@@ -111,7 +111,7 @@ namespace meph {
         public static void ResolveRecharge ( FactorManager fm, Character character, Character target ) {
             var recharges = fm.GetFactors ( character, STATUS_EFFECT.RECHARGE );
             for ( int i = 0; i < recharges.Count; i++ ) {
-                int amount = GetParamOrDefault ( recharges[i], ParamKeys.RC, 150 );
+                int amount = GetParamOrDefault ( recharges[i], ParamKeys.RA, 150 );
                 int steal = Math.Min ( amount, target.EP );
                 character.EP = Math.Min ( character.EP + steal, character.MaxEP );
                 target.EP -= steal;

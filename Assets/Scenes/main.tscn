@@ -8,6 +8,7 @@ script = ExtResource("1_l26l0")
 [node name="BoardRoot" type="Control" parent="."]
 unique_name_in_owner = true
 layout_mode = 3
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 metadata/_edit_use_anchors_ = true
@@ -33,12 +34,11 @@ offset_bottom = 40.0
 [node name="ConsoleLog" type="RichTextLabel" parent="UI"]
 unique_name_in_owner = true
 layout_mode = 0
-offset_right = 253.0
-offset_bottom = 192.0
+offset_right = 256.0
+offset_bottom = 648.0
 theme_override_font_sizes/normal_font_size = 12
 theme_override_font_sizes/bold_font_size = 12
 theme_override_font_sizes/bold_italics_font_size = 12
 theme_override_font_sizes/italics_font_size = 12
 theme_override_font_sizes/mono_font_size = 12
-text = "placeholder"
-metadata/_edit_lock_ = true
+text = "SAMPLE TEXT"
