@@ -74,7 +74,7 @@ namespace meph {
 
             int totalDP = 0;
             for ( int i = 0; i < shields.Count; i++ )
-                totalDP += GetParamOrDefault ( shields[i], ParamKeys.DP, 0 );
+                totalDP += GetParamOrDefault ( shields[i], ParamKeys.DP );
 
             if ( totalDP == 0 ) return damage;
 
@@ -91,7 +91,7 @@ namespace meph {
             int toConsume = damage;
             for ( int i = 0; i < shields.Count && toConsume > 0; i++ ) {
                 var s = shields[i];
-                int dp = GetParamOrDefault ( s, ParamKeys.DP, 0 );
+                int dp = GetParamOrDefault ( s, ParamKeys.DP );
                 if ( dp <= 0 ) continue;
 
                 if ( toConsume >= dp ) {
