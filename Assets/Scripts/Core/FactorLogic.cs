@@ -107,6 +107,9 @@ namespace meph {
             return 0;
         }
 
+        // Broken shields still count as instances. Currently it is fine, but may need to change 
+        // along with other systems that rely on the number of shields in the future
+        // A simple lambda would do later
         public static int GetToughnessEarthBonus ( FactorManager fm, Character character ) {
             var shields = fm.GetFactors ( character, STATUS_EFFECT.TOUGHNESS );
             return shields.Count * 150;
@@ -123,6 +126,12 @@ namespace meph {
             }
         }
 
+        public static void ResolveHealingInstant ( Character character, Character target, int HA = 100 ) {
+            character.LP = Math.Min ( character.LP + HA, character.MaxLP );
+            if ( target != null )
+                target.LP = Math.Max ( target.LP - ( HA / 2 ), 0 );
+        }
+
         public static void ResolveRecharge ( FactorManager fm, Character character, Character target ) {
             var recharges = fm.GetFactors ( character, STATUS_EFFECT.RECHARGE );
             for ( int i = 0; i < recharges.Count; i++ ) {
@@ -133,6 +142,12 @@ namespace meph {
             }
         }
 
+        public static void ResolveRechargeInstant ( Character character, Character target, int RA = 150 ) {
+            int steal = Math.Min ( RA, target.EP );
+            character.EP = Math.Min ( character.EP + steal, character.MaxEP );
+            target.EP -= steal;
+        }
+
         public static void ResolveGrowth ( FactorManager fm, Character character, Character target ) {
             var growths = fm.GetFactors ( character, STATUS_EFFECT.GROWTH );
             for ( int i = 0; i < growths.Count; i++ ) {
@@ -141,6 +156,12 @@ namespace meph {
                 character.MP = Math.Min ( character.MP + steal, character.MaxMP );
                 target.MP -= steal;
             }
+        }
+
+        public static void ResolveGrowthInstant ( Character character, Character target, int GA = 100 ) {
+            int steal = Math.Min ( GA, target.MP );
+            character.MP = Math.Min ( character.MP + steal, character.MaxMP );
+            target.MP -= steal;
         }
 
         public static void ResolveStorm ( FactorManager fm, Character target ) {
