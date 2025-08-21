@@ -1,6 +1,5 @@
 using Godot;
 using meph;
-using static meph.CharacterCreator;
 using static meph.CharacterLogic;
 using static meph.Character;
 
@@ -45,8 +44,8 @@ public partial class Debug : Node {
         var owawaData = GD.Load<CharacterData> ( "res://Assets/Resources/Characters/Owawa.tres" );
 
         // Create characters from data and set their sides
-        SetAttacker ( InitCharacter ( rokData ) );
-        SetDefender ( InitCharacter ( owawaData ) );
+        SetAttacker ( new Character ( rokData ) );
+        SetDefender ( new Character ( owawaData ) );
 
         // Create and equip a test card to attacker
         var testCard = CreateTestCard ( );

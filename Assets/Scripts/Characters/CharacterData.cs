@@ -21,6 +21,12 @@ namespace meph {
         [Export] public Godot.Collections.Array<CharmData> charms = [];
 
         [Export] public SetBonusData setBonus;
+
+        [Export] public int DEF;
+        [Export] public int EssenceDEF;
+
+        [Export] public float CritRate;
+        [Export] public float CritDamage;
     }
 
     [GlobalClass]

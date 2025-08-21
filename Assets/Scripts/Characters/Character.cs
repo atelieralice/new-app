@@ -65,11 +65,26 @@ namespace meph {
         public int UP { get; internal set; }
         public int Potion { get; internal set; }
 
+        public int DEF { get; internal set; } = 50;
+        public int EssenceDEF { get; internal set; } = 50;
+
+        public float CritRate { get; internal set; } = 0.10f;
+        public float CritDamage { get; internal set; } = 0.05f; // % absolute damage
+
+        public int NormalDamage { get; internal set; }
+        public int EarthDamage { get; internal set; }
+        public int WaterDamage { get; internal set; }
+        public int ElectricityDamage { get; internal set; }
+        public int NatureDamage { get; internal set; }
+        public int AirDamage { get; internal set; }
+        public int FireDamage { get; internal set; }
+        public int IceDamage { get; internal set; }
+        public int LightDamage { get; internal set; }
+        public int DarknessDamage { get; internal set; }
+        public int AbsoluteDamage { get; internal set; }
+
         // Equiped cards are stored in a dictionary with their type as the key
         public Dictionary<Card.TYPE, Card> EquippedSlots { get; internal set; } = new ( );
-
-        // Default crit stats could be init by the game manager and different values could added as a modifier here
-        // Empty until it is decided
 
         // This variable represents Factors (and other status effects) as a bitfield 
         // Do NOT use directly to apply effects, use FactorManager instead   
@@ -79,6 +94,32 @@ namespace meph {
         // &= ~: Bitwise AND with NOT (remove flag) -> statusEffects &= ~STATUS_EFFECT.BURNING;
         // &   : Bitwise AND (check flag)           -> (statusEffects & STATUS_EFFECT.BURNING) != 0
 
+        // Constructor
+        public Character ( CharacterData data ) {
+            CharName = data.charName;
+            Star = data.star;
+            EssenceType = data.essenceType;
+            WeaponType = data.weaponType;
+            MaxLP = data.maxLP;
+            MaxEP = data.maxEP;
+            MaxMP = data.maxMP;
+            MaxUP = data.maxUP;
+            MaxPotion = data.maxPotion;
+
+            LP = data.maxLP;
+            EP = data.maxEP;
+            MP = data.maxMP;
+            UP = 0;
+            Potion = data.maxPotion;
+            StatusEffects = STATUS_EFFECT.NONE;
+            EquippedSlots = new Dictionary<Card.TYPE, Card> ( );
+
+            DEF = data.DEF;
+            EssenceDEF = data.EssenceDEF;
+
+            CritRate = data.CritRate;
+            CritDamage = data.CritDamage;
+        }
     }
 
     // Helper method to check if a specific status effect is present (use on statusEffects)
@@ -91,20 +132,4 @@ namespace meph {
     // Example:
     // user.StatusEffects.Has(Character.STATUS_EFFECT.FREEZE)
     // We may omit the "Character." in files that have a static using statement for it
-
-    public static class CharacterCreator {
-        public static Character InitCharacter ( CharacterData data ) {
-            var character = new Character ( );
-            character.CharName = data.charName;
-            character.Star = data.star;
-            character.EssenceType = data.essenceType;
-            character.WeaponType = data.weaponType;
-            character.LP = data.maxLP;
-            character.EP = data.maxEP;
-            character.MP = data.maxMP;
-            character.UP = data.maxUP;
-            character.Potion = data.maxPotion;
-            return character;
-        }
-    }
 }
