@@ -19,7 +19,7 @@ namespace meph {
     // - Some effects are "overwrite-only" (STORM, FREEZE): only one instance exists; re-applying refreshes it.
     // - Character.StatusEffects is a bitfield mirror for quick checks; do not mutate it directly.
     public class FactorManager {
-        // Lifecycle events (engine-agnostic; safe for Unity)
+        // Lifecycle events
         public event Action<Character, STATUS_EFFECT, FactorInstance> OnFactorApplied;
         public event Action<Character, STATUS_EFFECT, FactorInstance> OnFactorRemoved;
         public event Action<Character, STATUS_EFFECT> OnStatusCleared;

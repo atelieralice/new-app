@@ -3,6 +3,7 @@ using Godot;
 
 namespace meph {
     public static class CharacterLogic {
+
         public static void EquipCardToSlot ( Character character, Card card ) {
             // Null checks
             if ( card == null || character == null ) return;

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using static meph.Character;
 
+// Gets a specific instance's parameter's value. This value is then used when "marching" factors
 namespace meph {
     public static class FactorLogic {
 
