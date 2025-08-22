@@ -120,12 +120,10 @@ namespace meph {
 
     // Helper method to check if a specific status effect is present (use on statusEffects)
     // It ANDs the statusEffects with a specific effect to know if that specific effect is set
+    // Example: character.StatusEffects.Has(Character.STATUS_EFFECT.FREEZE)
     public static class StatusEffectResolver {
         public static bool Has ( this Character.STATUS_EFFECT effects, Character.STATUS_EFFECT effect ) {
             return ( effects & effect ) != 0;
         }
     }
-    // Example:
-    // user.StatusEffects.Has(Character.STATUS_EFFECT.FREEZE)
-    // We may omit the "Character." in files that have a static using statement for it
 }

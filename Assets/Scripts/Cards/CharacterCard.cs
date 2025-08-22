@@ -127,7 +127,8 @@ namespace meph {
             _character = new Character ( data );
         }
 
-        // Helper method to check status effect (same usage as Character)
+        // IMPORTANT! Has shorter syntax from its Character counterpart
+        // Example: user.Has(Character.STATUS_EFFECT.FREEZE)
         public bool Has ( Character.STATUS_EFFECT effect ) => _character.StatusEffects.Has ( effect );
     }
 }
