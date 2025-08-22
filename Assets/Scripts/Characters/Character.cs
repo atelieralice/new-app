@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 
-// We could implement an interface like ITargetableEntity for future characters' skills (wink wink!). Just a reminder
-// For now I'll just go along with what I wrote, doing stuff will be faster than thinking a very complex system for that
 namespace meph {
     public class Character {
         public enum STAR {
@@ -56,7 +54,6 @@ namespace meph {
         public int MaxLP { get; internal set; }
         public int MaxEP { get; internal set; }
         public int MaxMP { get; internal set; }
-        public int MaxUP { get; internal set; }
         public int MaxPotion { get; internal set; }
 
         public int LP { get; internal set; }
@@ -103,7 +100,6 @@ namespace meph {
             MaxLP = data.maxLP;
             MaxEP = data.maxEP;
             MaxMP = data.maxMP;
-            MaxUP = data.maxUP;
             MaxPotion = data.maxPotion;
 
             LP = data.maxLP;

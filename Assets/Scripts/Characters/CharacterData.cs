@@ -13,7 +13,6 @@ namespace meph {
         [Export] public int maxLP;
         [Export] public int maxEP;
         [Export] public int maxMP;
-        [Export] public int maxUP;
         [Export] public int maxPotion;
 
         // Unused, might be useful later
