@@ -4,7 +4,7 @@ using System.Collections.Generic;
 // Card wrapper for character
 namespace meph {
     public class CharacterCard : Card {
-        private Character _character;
+        private readonly Character _character;
 
         public Character Character => _character;
 
