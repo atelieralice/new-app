@@ -2,6 +2,7 @@ using meph;
 using System.Collections.Generic;
 
 // Card wrapper for character
+// CharacterData -> Character -> CharacterCard
 namespace meph {
     public class CharacterCard : Card {
         private readonly Character _character;

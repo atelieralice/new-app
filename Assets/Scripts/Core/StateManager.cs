@@ -3,7 +3,6 @@ using Godot;
 
 // This file handles the game state
 namespace meph {
-
     public enum TURN {
         ATTACKER = 0,
         DEFENDER = 1

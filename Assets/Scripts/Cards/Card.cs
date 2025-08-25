@@ -14,6 +14,7 @@ namespace meph {
             H, A, G, B, Gl  // Charms
         }
 
+        public string OwnerCharacter { get; internal set; }
         public string Id { get; internal set; }
         public string Name { get; internal set; }
         public TYPE Type { get; internal set; }
