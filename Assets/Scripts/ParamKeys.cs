@@ -31,13 +31,15 @@ namespace meph {
         public const string DP = "DP";   // Durability Power
         public const string DT = "DT";   // Durability Time
         public const string HA = "HA";   // Heal Amount
+        public const string HT = "HT";   // Heal Time
         public const string RA = "RA";   // Recharge Amount
+        public const string RT = "RT";   // Recharge Time
         public const string GA = "GA";   // Growth Amount
+        public const string GT = "GT";   // Growth Time
         public const string SD = "SD";   // Storm Damage
         public const string ST = "ST";   // Storm Time
         public const string BD = "BD";   // Burn Damage
         public const string BT = "BT";   // Burning Time
         public const string FT = "FT";   // Freeze Time
-
     }
 }
