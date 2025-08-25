@@ -10,33 +10,25 @@ namespace meph {
 
     public class StateManager {
         public TURN CurrentTurn { get; private set; } = TURN.ATTACKER;
-
-        // We use events so any future component we add will easily react to state changes
-        // These events are handled in GameManager.cs
-        public event Action OnAttackerTurn;
-        public event Action OnDefenderTurn;
-        public event Action OnActionLock;
-
         public bool ActionsLocked { get; private set; } = false;
-
 
         // We invoke an event whenever a side gets the turn
         public void NextTurn ( ) {
             ActionsLocked = false; // Clear lock at the start of each turn
             CurrentTurn = CurrentTurn == TURN.ATTACKER ? TURN.DEFENDER : TURN.ATTACKER;
             if ( CurrentTurn == TURN.ATTACKER ) {
-                OnAttackerTurn?.Invoke ( );
+                EventBus.RaiseAttackerTurn ( );
                 GD.Print ( "Attacker's turn." );
             } else {
-                OnDefenderTurn?.Invoke ( );
+                EventBus.RaiseDefenderTurn ( );
                 GD.Print ( "Defender's turn." );
             }
         }
 
         // Helper method to invoke the event from outside this class
         public void LockAction ( ) {
-            ActionsLocked = true; // Lock actions for the rest of the turn
-            OnActionLock?.Invoke ( );
+            ActionsLocked = true;
+            EventBus.RaiseActionLock ( );
         }
 
         public bool CanAct ( ) => !ActionsLocked; // For convenience

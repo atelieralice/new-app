@@ -10,12 +10,8 @@ public partial class GameManager : Node {
     public Character Attacker { get; private set; }
     public Character Defender { get; private set; }
 
-    public void SetAttacker ( Character character ) {
-        Attacker = character;
-    }
-    public void SetDefender ( Character character ) {
-        Defender = character;
-    }
+    public void SetAttacker ( Character character ) => Attacker = character;
+    public void SetDefender ( Character character ) => Defender = character;
     public void Reset ( ) {
         Attacker = null;
         Defender = null;
@@ -26,9 +22,8 @@ public partial class GameManager : Node {
     private void OnDefenderTurnHandler ( ) { ResolveTurnStart ( Defender, Attacker ); }
     private void OnActionLockHandler ( ) { }
 
-    // Apply per-turn effects, then age or terminate factors
+    // Update factors for both sides
     private void ResolveTurnStart ( Character current, Character other ) {
-        // Update factors for both sides
         if ( current != null && other != null ) {
             FactorLogic.ResolveHealing ( factorManager, current, other );
             FactorLogic.ResolveRecharge ( factorManager, current, other );
@@ -67,11 +62,10 @@ public partial class GameManager : Node {
         factorManager.OnFactorUpdate += ( ) =>
             ConsoleLog.Info ( "Factors updated." );
 
-        stateManager.OnAttackerTurn += OnAttackerTurnHandler;
-        stateManager.OnDefenderTurn += OnDefenderTurnHandler;
-        stateManager.OnActionLock += OnActionLockHandler;
+        EventBus.OnAttackerTurn += OnAttackerTurnHandler;
+        EventBus.OnDefenderTurn += OnDefenderTurnHandler;
+        EventBus.OnActionLock += OnActionLockHandler;
     }
 
     public override void _Process ( double delta ) { }
-
 }
