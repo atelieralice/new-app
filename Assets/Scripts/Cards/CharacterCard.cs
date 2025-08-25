@@ -22,7 +22,6 @@ namespace meph {
         public int MaxLP => _character.MaxLP;
         public int MaxEP => _character.MaxEP;
         public int MaxMP => _character.MaxMP;
-        public int MaxPotion => _character.MaxPotion;
 
         public int LP {
             get => _character.LP;
@@ -39,10 +38,6 @@ namespace meph {
         public int UP {
             get => _character.UP;
             set => _character.UP = value;
-        }
-        public int Potion {
-            get => _character.Potion;
-            set => _character.Potion = value;
         }
 
         public int DEF {
@@ -116,6 +111,8 @@ namespace meph {
         }
 
         // Constructor
+        // Add a isUsable field to CharacterData.cs if a future character comes with an active effect
+        // IsUsabe = data.isUsable
         public CharacterCard ( CharacterData data ) {
             Id = data.charName;
             Name = data.charName;

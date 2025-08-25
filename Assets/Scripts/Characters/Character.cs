@@ -54,13 +54,11 @@ namespace meph {
         public int MaxLP { get; internal set; }
         public int MaxEP { get; internal set; }
         public int MaxMP { get; internal set; }
-        public int MaxPotion { get; internal set; }
 
         public int LP { get; internal set; }
         public int EP { get; internal set; }
         public int MP { get; internal set; }
         public int UP { get; internal set; }
-        public int Potion { get; internal set; }
 
         public int DEF { get; internal set; } = 50;
         public int EssenceDEF { get; internal set; } = 50;
@@ -100,21 +98,19 @@ namespace meph {
             MaxLP = data.maxLP;
             MaxEP = data.maxEP;
             MaxMP = data.maxMP;
-            MaxPotion = data.maxPotion;
 
             LP = data.maxLP;
             EP = data.maxEP;
             MP = data.maxMP;
             UP = 0;
-            Potion = data.maxPotion;
             StatusEffects = STATUS_EFFECT.NONE;
             EquippedSlots = new Dictionary<Card.TYPE, Card> ( );
 
             DEF = data.DEF;
-            EssenceDEF = data.EssenceDEF;
+            EssenceDEF = data.essenceDEF;
 
-            CritRate = data.CritRate;
-            CritDamage = data.CritDamage;
+            CritRate = data.critRate;
+            CritDamage = data.critDamage;
         }
     }
 

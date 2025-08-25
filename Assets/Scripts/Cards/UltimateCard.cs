@@ -9,7 +9,6 @@ namespace meph {
 
         // Constructor
         public UltimateCard ( ) {
-            Type = TYPE.U;
         }
     }
 }

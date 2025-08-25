@@ -18,6 +18,8 @@ namespace meph {
         [Export] public bool isUsable;
         [Export] public bool hasPassive;
 
+        [Export] public int maxPotion = 1;
+
         // Used as reference to logic
         [Export] public string effectKey;
         [Export] public string passiveEffectKey;

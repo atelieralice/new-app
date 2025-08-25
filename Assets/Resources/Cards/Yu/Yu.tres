@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CharacterData" load_steps=3 format=3 uid="uid://c0revpy76ak1y"]
+
+[ext_resource type="Script" uid="uid://bqglynhxgmuyn" path="res://Assets/Scripts/Cards/CardData.cs" id="1_bt6ev"]
+[ext_resource type="Script" uid="uid://dv47kyjkd823w" path="res://Assets/Scripts/Characters/CharacterData.cs" id="2_c6ss1"]
+
+[resource]
+script = ExtResource("2_c6ss1")
+charName = "Yu"
+star = 5
+essenceType = 7
+weaponType = 1
+maxLP = 14000
+maxEP = 600
+maxMP = 600
+metadata/_custom_type_script = "uid://dv47kyjkd823w"
