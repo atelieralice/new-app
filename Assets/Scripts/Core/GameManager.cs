@@ -62,6 +62,7 @@ public partial class GameManager : Node {
         factorManager.OnFactorUpdate += ( ) =>
             ConsoleLog.Info ( "Factors updated." );
 
+        // Global events
         EventBus.OnAttackerTurn += OnAttackerTurnHandler;
         EventBus.OnDefenderTurn += OnDefenderTurnHandler;
         EventBus.OnActionLock += OnActionLockHandler;
