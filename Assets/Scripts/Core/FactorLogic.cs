@@ -173,7 +173,7 @@ namespace meph {
                 totalSD += GetParamOrDefault ( storms[i], ParamKeys.SD, 50 );
 
             if ( totalSD > 0 )
-                GameManager.ApplyDamage ( fm, target, totalSD );
+                DamageLogic.ApplyDamage ( fm, target, totalSD, DAMAGE_TYPE.AIR );
         }
 
         public static void ResolveBurning ( FactorManager fm, Character target ) {
@@ -187,7 +187,7 @@ namespace meph {
             if ( totalBD <= 0 ) return;
 
             int dmg = target.MaxLP * totalBD / 100;
-            GameManager.ApplyDamage ( fm, target, dmg );
+            DamageLogic.ApplyDamage ( fm, target, dmg, DAMAGE_TYPE.FIRE );
         }
 
         public static void ResolveCardFreeze ( Character character ) {

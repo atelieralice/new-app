@@ -63,7 +63,7 @@ public partial class Debug : Node {
             Name = "Test Q Card",
             Type = Card.TYPE.Q,
             Description = "Placeholder Q card for testing.",
-            Effect = ( user, target ) => {
+            Effect = (fm, user, target ) => {
                 target.LP -= 10;
                 user.StatusEffects |= STATUS_EFFECT.STORM;
             }

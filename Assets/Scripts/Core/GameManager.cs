@@ -21,13 +21,6 @@ public partial class GameManager : Node {
         Defender = null;
     }
 
-    public static void ApplyDamage ( FactorManager factorManager, Character character, int damage ) {
-        if ( character == null || damage <= 0 ) return;
-        int remaining = FactorLogic.ResolveToughness ( factorManager, character, damage );
-        if ( remaining > 0 )
-            character.LP = Mathf.Max ( character.LP - remaining, 0 );
-    }
-
     // When an event is invoked these methods will be called
     private void OnAttackerTurnHandler ( ) { ResolveTurnStart ( Attacker, Defender ); }
     private void OnDefenderTurnHandler ( ) { ResolveTurnStart ( Defender, Attacker ); }

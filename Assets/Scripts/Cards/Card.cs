@@ -3,8 +3,8 @@ using System.Collections.Generic;
 
 // Base class for all cards. Should not be instantiated directly
 namespace meph {
-    public delegate void CardEffect ( Character user, Character target );
-    public delegate void CardPassiveEffect ( Character user, Character target );
+    public delegate void CardEffect ( FactorManager fm, Character user, Character target );
+    public delegate void CardPassiveEffect ( FactorManager fm, Character user, Character target );
 
     public class Card {
         public enum TYPE {
