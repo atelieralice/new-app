@@ -11,7 +11,7 @@ namespace meph {
         public int PotionCount { get; private set; }
 
         // Constructor
-        public PotionCard ( CardData data ) {
+        public PotionCard ( PotionCardData data ) {
             OwnerCharacter = data.ownerCharacter;
             Id = data.id;
             Name = data.name;
@@ -23,7 +23,8 @@ namespace meph {
             HasPassive = data.hasPassive;
             MaxPotion = data.maxPotion;
             PotionCount = data.maxPotion;
-            // Need a way to set effectKey
+            Effect = CardEffectRegistry.EffectRegistry.TryGetValue ( data.effectKey, out var effect ) ? effect : null;
+            PassiveEffect = CardEffectRegistry.PassiveEffectRegistry.TryGetValue ( data.passiveEffectKey, out var passive ) ? passive : null;
         }
     }
 }
