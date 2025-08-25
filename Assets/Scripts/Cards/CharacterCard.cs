@@ -131,7 +131,7 @@ namespace meph {
 
         public void EquipCardToSlot ( Card card ) => CharacterLogic.EquipCardToSlot ( _character, card );
 
-        public void UseSlot ( FactorManager fm, TYPE slotType, CharacterCard user, CharacterCard target ) {
+        public void UseSlot ( FactorManager fm, TYPE slotType, CharacterCard target ) {
             CharacterLogic.UseSlot ( fm, slotType, _character, target.Character );
         }
     }
