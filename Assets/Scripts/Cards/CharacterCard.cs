@@ -132,7 +132,7 @@ namespace meph {
         public void EquipCardToSlot ( Card card ) => CharacterLogic.EquipCardToSlot ( _character, card );
 
         public void UseSlot ( FactorManager fm, TYPE slotType, CharacterCard user, CharacterCard target ) {
-            CharacterLogic.UseSlot ( fm, _character, slotType, user.Character, target.Character );
+            CharacterLogic.UseSlot ( fm, slotType, _character, target.Character );
         }
     }
 }

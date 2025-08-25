@@ -27,9 +27,9 @@ namespace meph {
             ConsoleLog.Info ( $"{character.CharName} equipped {card.Name} to {card.Type} slot." );
         }
 
-        public static void UseSlot ( FactorManager fm, Character character, Card.TYPE slotType, Character user, Character target ) {
+        public static void UseSlot ( FactorManager fm, Card.TYPE slotType, Character user, Character target ) {
             // Check and get equipped card
-            if ( character.EquippedSlots.TryGetValue ( slotType, out Card card ) && card != null ) {
+            if ( user.EquippedSlots.TryGetValue ( slotType, out Card card ) && card != null ) {
                 // Execute the card's effect
                 card.Effect?.Invoke ( fm, user, target );
                 ConsoleLog.Info ( $"{user.CharName} used {card.Name} from {slotType} slot on {target.CharName}." );
