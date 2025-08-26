@@ -1,9 +1,10 @@
 using meph;
 using Godot;
 
+// TODO: Add Unequipping
 namespace meph {
     public static class CharacterLogic {
-        public static void EquipCardToSlot ( Character character, Card card ) {
+        public static void EquipCardToSlot ( this Character character, Card card ) {
             // Null checks
             if ( card == null || character == null ) return;
 
@@ -27,7 +28,8 @@ namespace meph {
             ConsoleLog.Info ( $"{character.CharName} equipped {card.Name} to {card.Type} slot." );
         }
 
-        public static void UseSlot ( FactorManager fm, Card.TYPE slotType, Character user, Character target ) {
+        // TODO: Add events to make callbacks to card logic (usage etc.)
+        public static void UseSlot ( this Character user, FactorManager fm, Card.TYPE slotType, Character target ) {
             // Check and get equipped card
             if ( user.EquippedSlots.TryGetValue ( slotType, out Card card ) && card != null ) {
                 // Execute the card's effect
