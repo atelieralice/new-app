@@ -9,54 +9,68 @@ namespace meph {
         private static int GetParamOrDefault ( FactorInstance factor, string key, int defVal = 0 ) =>
             factor.Params != null && factor.Params.TryGetValue ( key, out var v ) ? v : defVal;
 
+        // Calculate effective factor value from equipment bonuses
+        private static int GetEffectiveFactorValue ( Character user, string paramKey, int baseValue ) {
+            int bonus = user.GetEffectiveStat ( paramKey );
+            return baseValue + bonus;
+        }
+
         private static bool IsStormed ( FactorManager fm, Character target ) =>
             fm.GetFactors ( target, STATUS_EFFECT.STORM ).Count > 0;
 
         public static void AddToughness ( FactorManager fm, Character character, int duration = 2, int DP = 100 ) {
             if ( IsStormed ( fm, character ) ) return;
-            var parameters = new Dictionary<string, int> { { ParamKeys.DP, DP } };
+            int effectiveDP = GetEffectiveFactorValue ( character, ParamKeys.DP, DP );
+            var parameters = new Dictionary<string, int> { { ParamKeys.DP, effectiveDP } };
             fm.ApplyFactor ( character, STATUS_EFFECT.TOUGHNESS, duration, parameters );
         }
 
         public static void AddHealing ( FactorManager fm, Character character, int duration = 2, int HA = 100 ) {
             if ( IsStormed ( fm, character ) ) return;
-            var parameters = new Dictionary<string, int> { { ParamKeys.HA, HA } };
+            int effectiveHA = GetEffectiveFactorValue ( character, ParamKeys.HA, HA );
+            var parameters = new Dictionary<string, int> { { ParamKeys.HA, effectiveHA } };
             fm.ApplyFactor ( character, STATUS_EFFECT.HEALING, duration, parameters );
         }
 
         public static void AddRecharge ( FactorManager fm, Character character, int duration = 2, int RA = 150 ) {
             if ( IsStormed ( fm, character ) ) return;
-            var parameters = new Dictionary<string, int> { { ParamKeys.RA, RA } };
+            int effectiveRA = GetEffectiveFactorValue ( character, ParamKeys.RA, RA );
+            var parameters = new Dictionary<string, int> { { ParamKeys.RA, effectiveRA } };
             fm.ApplyFactor ( character, STATUS_EFFECT.RECHARGE, duration, parameters );
         }
 
         public static void AddGrowth ( FactorManager fm, Character character, int duration = 2, int GA = 100 ) {
             if ( IsStormed ( fm, character ) ) return;
-            var parameters = new Dictionary<string, int> { { ParamKeys.GA, GA } };
+            int effectiveGA = GetEffectiveFactorValue ( character, ParamKeys.GA, GA );
+            var parameters = new Dictionary<string, int> { { ParamKeys.GA, effectiveGA } };
             fm.ApplyFactor ( character, STATUS_EFFECT.GROWTH, duration, parameters );
         }
 
         public static void AddStorm ( FactorManager fm, Character character, int duration = 2, int SD = 50 ) {
-            var parameters = new Dictionary<string, int> { { ParamKeys.SD, SD } };
+            int effectiveSD = GetEffectiveFactorValue ( character, ParamKeys.SD, SD );
+            var parameters = new Dictionary<string, int> { { ParamKeys.SD, effectiveSD } };
             fm.ApplyFactor ( character, STATUS_EFFECT.STORM, duration, parameters );
         }
 
         public static void AddBurning ( FactorManager fm, Character character, int duration = 2, int BD = 2 ) {
             if ( IsStormed ( fm, character ) ) return;
-            var parameters = new Dictionary<string, int> { { ParamKeys.BD, BD } };
+            int effectiveBD = GetEffectiveFactorValue ( character, ParamKeys.BD, BD );
+            var parameters = new Dictionary<string, int> { { ParamKeys.BD, effectiveBD } };
             fm.ApplyFactor ( character, STATUS_EFFECT.BURNING, duration, parameters );
         }
 
         public static void AddFreeze ( FactorManager fm, Character character, int FT = 2 ) {
             if ( IsStormed ( fm, character ) ) return;
-            var parameters = new Dictionary<string, int> { { ParamKeys.FT, FT } };
-            fm.ApplyFactor ( character, STATUS_EFFECT.FREEZE, FT, parameters );
+            int effectiveFT = GetEffectiveFactorValue ( character, ParamKeys.FT, FT );
+            var parameters = new Dictionary<string, int> { { ParamKeys.FT, effectiveFT } };
+            fm.ApplyFactor ( character, STATUS_EFFECT.FREEZE, effectiveFT, parameters );
         }
 
         public static void FreezeCard ( FactorManager fm, Character character, Card.TYPE slotName, int FT ) {
             if ( IsStormed ( fm, character ) ) return;
+            int effectiveFT = GetEffectiveFactorValue ( character, ParamKeys.FT, FT );
             if ( character.EquippedSlots.TryGetValue ( slotName, out var card ) ) {
-                card.Freeze ( FT );
+                card.Freeze ( effectiveFT );
             }
         }
 
@@ -127,9 +141,10 @@ namespace meph {
         }
 
         public static void ResolveHealingInstant ( Character character, Character target, int HA = 100 ) {
-            character.LP = Math.Min ( character.LP + HA, character.MaxLP );
+            int effectiveHA = GetEffectiveFactorValue ( character, ParamKeys.HA, HA );
+            character.LP = Math.Min ( character.LP + effectiveHA, character.MaxLP );
             if ( target != null )
-                target.LP = Math.Max ( target.LP - ( HA / 2 ), 0 );
+                target.LP = Math.Max ( target.LP - ( effectiveHA / 2 ), 0 );
         }
 
         public static void ResolveRecharge ( FactorManager fm, Character character, Character target ) {
@@ -143,7 +158,8 @@ namespace meph {
         }
 
         public static void ResolveRechargeInstant ( Character character, Character target, int RA = 150 ) {
-            int steal = Math.Min ( RA, target.EP );
+            int effectiveRA = GetEffectiveFactorValue ( character, ParamKeys.RA, RA );
+            int steal = Math.Min ( effectiveRA, target.EP );
             character.EP = Math.Min ( character.EP + steal, character.MaxEP );
             target.EP -= steal;
         }
@@ -159,7 +175,8 @@ namespace meph {
         }
 
         public static void ResolveGrowthInstant ( Character character, Character target, int GA = 100 ) {
-            int steal = Math.Min ( GA, target.MP );
+            int effectiveGA = GetEffectiveFactorValue ( character, ParamKeys.GA, GA );
+            int steal = Math.Min ( effectiveGA, target.MP );
             character.MP = Math.Min ( character.MP + steal, character.MaxMP );
             target.MP -= steal;
         }

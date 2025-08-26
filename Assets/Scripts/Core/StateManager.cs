@@ -38,7 +38,7 @@ namespace meph {
         // Here we encapsulate the game's action logic in this method and ensure actions are only performed when allowed.
         public void TryAction ( Action action ) {
             if ( CanAct ( ) ) {
-                action ( );
+                action ( );  // TODO: Check for failing actions that continue
                 LockAction ( );
             } else {
                 GD.Print ( "Cannot act, actions are locked." );
