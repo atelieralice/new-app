@@ -46,37 +46,78 @@ namespace meph {
             IMMUNE = 128
         }
 
-        public string CharName { get; internal set; }
-        public STAR Star { get; internal set; }
-        public ESSENCE_TYPE EssenceType { get; internal set; }
-        public WEAPON_TYPE WeaponType { get; internal set; }
+        public string CharName { get; private set; }
+        public STAR Star { get; private set; }
+        public ESSENCE_TYPE EssenceType { get; private set; }
+        public WEAPON_TYPE WeaponType { get; private set; }
 
-        public int MaxLP { get; internal set; }
-        public int MaxEP { get; internal set; }
-        public int MaxMP { get; internal set; }
+        // Custom getters for automatically getting the effective value without making a big change.
+        // So basically we add GetEffectiveStat method to getters and be saved from adding it everywhere else.
+        private int _maxLP;
+        public int MaxLP { get => GetEffectiveStat ( ParamKeys.MaxLP ); internal set => _maxLP = value; }
 
-        public int LP { get; internal set; }
-        public int EP { get; internal set; }
-        public int MP { get; internal set; }
-        public int UP { get; internal set; }
+        private int _maxEP;
+        public int MaxEP { get => GetEffectiveStat ( ParamKeys.MaxEP ); internal set => _maxEP = value; }
 
-        public int DEF { get; internal set; } = 50;
-        public int EssenceDEF { get; internal set; } = 50;
+        private int _maxMP;
+        public int MaxMP { get => GetEffectiveStat ( ParamKeys.MaxMP ); internal set => _maxMP = value; }
 
-        public float CritRate { get; internal set; } = 0.10f;
-        public float CritDamage { get; internal set; } = 0.05f; // % absolute damage
+        private int _lp;
+        public int LP { get => GetEffectiveStat ( ParamKeys.LP ); internal set => _lp = value; }
 
-        public int NormalDamage { get; internal set; }
-        public int EarthDamage { get; internal set; }
-        public int WaterDamage { get; internal set; }
-        public int ElectricityDamage { get; internal set; }
-        public int NatureDamage { get; internal set; }
-        public int AirDamage { get; internal set; }
-        public int FireDamage { get; internal set; }
-        public int IceDamage { get; internal set; }
-        public int LightDamage { get; internal set; }
-        public int DarknessDamage { get; internal set; }
-        public int AbsoluteDamage { get; internal set; }
+        private int _ep;
+        public int EP { get => GetEffectiveStat ( ParamKeys.EP ); internal set => _ep = value; }
+
+        private int _mp;
+        public int MP { get => GetEffectiveStat ( ParamKeys.MP ); internal set => _mp = value; }
+
+        private int _up;
+        public int UP { get => GetEffectiveStat ( ParamKeys.UP ); internal set => _up = value; }
+
+        private int _def;
+        public int DEF { get => GetEffectiveStat ( ParamKeys.DEF ); internal set => _def = value; }
+
+        private int _essenceDEF;
+        public int EssenceDEF { get => GetEffectiveStat ( ParamKeys.EssenceDEF ); internal set => _essenceDEF = value; }
+
+        private float _critRate;
+        public float CritRate { get => GetEffectiveStat ( ParamKeys.CritRate ); internal set => _critRate = value; }
+
+        private float _critDamage; // % absolute damage
+        public float CritDamage { get => GetEffectiveStat ( ParamKeys.CritDamage ); internal set => _critDamage = value; }
+
+        private int _normalDamage;
+        public int NormalDamage { get => GetEffectiveStat ( ParamKeys.NormalDamage ); internal set => _normalDamage = value; }
+
+        private int _earthDamage;
+        public int EarthDamage { get => GetEffectiveStat ( ParamKeys.EarthDamage ); internal set => _earthDamage = value; }
+
+        private int _waterDamage;
+        public int WaterDamage { get => GetEffectiveStat ( ParamKeys.WaterDamage ); internal set => _waterDamage = value; }
+
+        private int _electricityDamage;
+        public int ElectricityDamage { get => GetEffectiveStat ( ParamKeys.ElectricityDamage ); internal set => _electricityDamage = value; }
+
+        private int _natureDamage;
+        public int NatureDamage { get => GetEffectiveStat ( ParamKeys.NatureDamage ); internal set => _natureDamage = value; }
+
+        private int _airDamage;
+        public int AirDamage { get => GetEffectiveStat ( ParamKeys.AirDamage ); internal set => _airDamage = value; }
+
+        private int _fireDamage;
+        public int FireDamage { get => GetEffectiveStat ( ParamKeys.FireDamage ); internal set => _fireDamage = value; }
+
+        private int _iceDamage;
+        public int IceDamage { get => GetEffectiveStat ( ParamKeys.IceDamage ); internal set => _iceDamage = value; }
+
+        private int _lightDamage;
+        public int LightDamage { get => GetEffectiveStat ( ParamKeys.LightDamage ); internal set => _lightDamage = value; }
+
+        private int _darknessDamage;
+        public int DarknessDamage { get => GetEffectiveStat ( ParamKeys.DarknessDamage ); internal set => _darknessDamage = value; }
+
+        private int _absoluteDamage;
+        public int AbsoluteDamage { get => GetEffectiveStat ( ParamKeys.AbsoluteDamage ); internal set => _absoluteDamage = value; }
 
         // Equiped cards are stored in a dictionary with their type as the key
         public Dictionary<Card.TYPE, Card> EquippedSlots { get; internal set; } = new ( );
@@ -114,44 +155,45 @@ namespace meph {
         }
 
         private int GetBaseStat ( string statKey ) {
-            switch ( statKey ) {
-                case ParamKeys.MaxLP: return MaxLP;
-                case ParamKeys.MaxEP: return MaxEP;
-                case ParamKeys.MaxMP: return MaxMP;
-                case ParamKeys.LP: return LP;
-                case ParamKeys.EP: return EP;
-                case ParamKeys.MP: return MP;
-                case ParamKeys.UP: return UP;
-                case ParamKeys.DEF: return DEF;
-                case ParamKeys.EssenceDEF: return EssenceDEF;
-                case ParamKeys.CritRate: return (int)( CritRate * 100 );
-                case ParamKeys.CritDamage: return (int)( CritDamage * 100 );
-                case ParamKeys.NormalDamage: return NormalDamage;
-                case ParamKeys.EarthDamage: return EarthDamage;
-                case ParamKeys.WaterDamage: return WaterDamage;
-                case ParamKeys.ElectricityDamage: return ElectricityDamage;
-                case ParamKeys.NatureDamage: return NatureDamage;
-                case ParamKeys.AirDamage: return AirDamage;
-                case ParamKeys.FireDamage: return FireDamage;
-                case ParamKeys.IceDamage: return IceDamage;
-                case ParamKeys.LightDamage: return LightDamage;
-                case ParamKeys.DarknessDamage: return DarknessDamage;
-                case ParamKeys.AbsoluteDamage: return AbsoluteDamage;
-                case ParamKeys.DP: return 0;
-                case ParamKeys.DT: return 0;
-                case ParamKeys.HA: return 0;
-                case ParamKeys.HT: return 0;
-                case ParamKeys.RA: return 0;
-                case ParamKeys.RT: return 0;
-                case ParamKeys.GA: return 0;
-                case ParamKeys.GT: return 0;
-                case ParamKeys.SD: return 0;
-                case ParamKeys.ST: return 0;
-                case ParamKeys.BD: return 0;
-                case ParamKeys.BT: return 0;
-                case ParamKeys.FT: return 0;
-                default: return 0;
-            }
+            return statKey switch {
+                ParamKeys.MaxLP => _maxLP,
+                ParamKeys.MaxEP => _maxEP,
+                ParamKeys.MaxMP => _maxMP,
+                ParamKeys.LP => _lp,
+                ParamKeys.EP => _ep,
+                ParamKeys.MP => _mp,
+                ParamKeys.UP => _up,
+                ParamKeys.DEF => _def,
+                ParamKeys.EssenceDEF => _essenceDEF,
+                ParamKeys.CritRate => (int)( _critRate * 100 ),
+                ParamKeys.CritDamage => (int)( _critDamage * 100 ),
+                ParamKeys.NormalDamage => _normalDamage,
+                ParamKeys.EarthDamage => _earthDamage,
+                ParamKeys.WaterDamage => _waterDamage,
+                ParamKeys.ElectricityDamage => _electricityDamage,
+                ParamKeys.NatureDamage => _natureDamage,
+                ParamKeys.AirDamage => _airDamage,
+                ParamKeys.FireDamage => _fireDamage,
+                ParamKeys.IceDamage => _iceDamage,
+                ParamKeys.LightDamage => _lightDamage,
+                ParamKeys.DarknessDamage => _darknessDamage,
+                ParamKeys.AbsoluteDamage => _absoluteDamage,
+                ParamKeys.DP => 0,
+                ParamKeys.DT => 0,
+                ParamKeys.HA => 0,
+                ParamKeys.HT => 0,
+                ParamKeys.RA => 0,
+                ParamKeys.RT => 0,
+                ParamKeys.GA => 0,
+                ParamKeys.GT => 0,
+                ParamKeys.SD => 0,
+                ParamKeys.ST => 0,
+                ParamKeys.BD => 0,
+                ParamKeys.BT => 0,
+                ParamKeys.FT => 0,
+                _ => 0,
+            };
+
         }
 
         public int GetEffectiveStat ( string statKey ) {
