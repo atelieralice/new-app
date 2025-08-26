@@ -112,6 +112,56 @@ namespace meph {
             CritRate = data.critRate;
             CritDamage = data.critDamage;
         }
+
+        private int GetBaseStat ( string statKey ) {
+            switch ( statKey ) {
+                case ParamKeys.MaxLP: return MaxLP;
+                case ParamKeys.MaxEP: return MaxEP;
+                case ParamKeys.MaxMP: return MaxMP;
+                case ParamKeys.LP: return LP;
+                case ParamKeys.EP: return EP;
+                case ParamKeys.MP: return MP;
+                case ParamKeys.UP: return UP;
+                case ParamKeys.DEF: return DEF;
+                case ParamKeys.EssenceDEF: return EssenceDEF;
+                case ParamKeys.CritRate: return (int)( CritRate * 100 );
+                case ParamKeys.CritDamage: return (int)( CritDamage * 100 );
+                case ParamKeys.NormalDamage: return NormalDamage;
+                case ParamKeys.EarthDamage: return EarthDamage;
+                case ParamKeys.WaterDamage: return WaterDamage;
+                case ParamKeys.ElectricityDamage: return ElectricityDamage;
+                case ParamKeys.NatureDamage: return NatureDamage;
+                case ParamKeys.AirDamage: return AirDamage;
+                case ParamKeys.FireDamage: return FireDamage;
+                case ParamKeys.IceDamage: return IceDamage;
+                case ParamKeys.LightDamage: return LightDamage;
+                case ParamKeys.DarknessDamage: return DarknessDamage;
+                case ParamKeys.AbsoluteDamage: return AbsoluteDamage;
+                case ParamKeys.DP: return 0;
+                case ParamKeys.DT: return 0;
+                case ParamKeys.HA: return 0;
+                case ParamKeys.HT: return 0;
+                case ParamKeys.RA: return 0;
+                case ParamKeys.RT: return 0;
+                case ParamKeys.GA: return 0;
+                case ParamKeys.GT: return 0;
+                case ParamKeys.SD: return 0;
+                case ParamKeys.ST: return 0;
+                case ParamKeys.BD: return 0;
+                case ParamKeys.BT: return 0;
+                case ParamKeys.FT: return 0;
+                default: return 0;
+            }
+        }
+
+        public int GetEffectiveStat ( string statKey ) {
+            int value = GetBaseStat ( statKey );
+            foreach ( var card in EquippedSlots.Values ) {
+                if ( !card.IsFrozen && card.StatBonuses.TryGetValue ( statKey, out int bonus ) )
+                    value += bonus;
+            }
+            return value;
+        }
     }
 
     // Helper method to check if a specific status effect is present (use on statusEffects)

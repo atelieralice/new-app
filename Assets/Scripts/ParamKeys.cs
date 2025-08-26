@@ -1,10 +1,15 @@
 namespace meph {
     public static class ParamKeys {
         // Core Stats
-        public const string LP = "LP";   // Life Points
-        public const string EP = "EP";   // Energy Points
-        public const string MP = "MP";   // Mana Points
-        public const string UP = "UP";   // Ultimate Points
+        public const string MaxLP = "MaxLP";   // Life Points
+        public const string MaxEP = "MaxEP";   // Energy Points
+        public const string MaxMP = "MaxMP";   // Mana Points
+        public const string MaxUP = "MaxUP";   // Ultimate Points
+
+        public const string LP = "LP";   // Current Life Points
+        public const string EP = "EP";   // Current Energy Points
+        public const string MP = "MP";   // Current Mana Points
+        public const string UP = "UP";   // Current Ultimate Points
 
         // Defense
         public const string DEF = "DEF";
