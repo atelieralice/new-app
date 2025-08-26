@@ -154,8 +154,8 @@ namespace meph {
             CritDamage = data.critDamage;
         }
 
-        private int GetBaseStat ( string statKey ) {
-            return statKey switch {
+        private int GetBaseStat ( string paramKey ) {
+            return paramKey switch {
                 ParamKeys.MaxLP => _maxLP,
                 ParamKeys.MaxEP => _maxEP,
                 ParamKeys.MaxMP => _maxMP,
@@ -196,10 +196,10 @@ namespace meph {
 
         }
 
-        public int GetEffectiveStat ( string statKey ) {
-            int value = GetBaseStat ( statKey );
+        public int GetEffectiveStat ( string paramKey ) {
+            int value = GetBaseStat ( paramKey );
             foreach ( var card in EquippedSlots.Values ) {
-                if ( !card.IsFrozen && card.StatBonuses.TryGetValue ( statKey, out int bonus ) )
+                if ( !card.IsFrozen && card.StatBonuses.TryGetValue ( paramKey, out int bonus ) )
                     value += bonus;
             }
             return value;
