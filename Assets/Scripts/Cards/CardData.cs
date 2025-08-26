@@ -13,6 +13,7 @@ namespace meph {
         [Export] public string description;
 
         [Export] public Godot.Collections.Dictionary<string, int> requirements = new ( );
+        [Export] public Godot.Collections.Dictionary<string, int> statBonuses = new ( );
 
         [Export] public bool isSwift;
         [Export] public bool isUsable;

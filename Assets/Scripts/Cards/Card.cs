@@ -22,6 +22,7 @@ namespace meph {
         public string Description { get; internal set; }
 
         public Dictionary<string, int> Requirements { get; internal set; } = new ( );
+        public Dictionary<string, int> StatBonuses { get; internal set; } = new ( );
 
         public virtual bool IsSwift { get; protected set; }
         public virtual bool IsUsable { get; protected set; }
