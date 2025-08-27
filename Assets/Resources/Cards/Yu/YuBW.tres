@@ -9,4 +9,6 @@ id = "yu_bw"
 name = "Katana of Blizzard"
 type = 2
 hasPassive = true
+effectKey = "yu_bw"
+passiveEffectKey = "yu_bw"
 metadata/_custom_type_script = "uid://bqglynhxgmuyn"

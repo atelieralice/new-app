@@ -21,8 +21,10 @@ namespace meph {
             IsUsable = data.isUsable;
             HasPassive = data.hasPassive;
             MaxUP = data.maxUP;
-            Effect = CardEffectRegistry.EffectRegistry.TryGetValue ( data.effectKey, out var effect ) ? effect : null;
-            PassiveEffect = CardEffectRegistry.PassiveEffectRegistry.TryGetValue ( data.passiveEffectKey, out var passive ) ? passive : null;
+            var effectKey = string.IsNullOrEmpty ( data.effectKey ) ? data.id : data.effectKey;
+            var passiveEffectKey = string.IsNullOrEmpty ( data.passiveEffectKey ) ? data.id : data.passiveEffectKey;
+            Effect = CardEffectRegistry.EffectRegistry.TryGetValue ( effectKey, out var effect ) ? effect : null;
+            PassiveEffect = CardEffectRegistry.PassiveEffectRegistry.TryGetValue ( passiveEffectKey, out var passive ) ? passive : null;
         }
     }
 }
