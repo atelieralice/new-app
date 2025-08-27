@@ -14,12 +14,18 @@ namespace meph {
 
         [Export] public Godot.Collections.Dictionary<string, int> requirements = new ( );
         [Export] public Godot.Collections.Dictionary<string, int> statBonuses = new ( );
+        
+        [ExportGroup("Card Specific")]
+        [Export] public int maxPotion;
+        [Export] public int maxUP;
 
+        [ExportCategory ( "Flags" )]
         [Export] public bool isSwift;
         [Export] public bool isUsable;
         [Export] public bool hasPassive;
 
         // Used as reference to logic
+        [ExportCategory("Effect Keys")]
         [Export] public string effectKey;
         [Export] public string passiveEffectKey;
     }
