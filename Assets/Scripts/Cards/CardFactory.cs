@@ -29,8 +29,8 @@ namespace meph {
             }
         }
 
-        public static CharacterCard CreateCharacterCard ( CharacterData data ) {
-            return new CharacterCard ( data );
+        public static Character CreateCharacter ( CharacterData data ) {
+            return new Character ( data );
         }
     }
 }

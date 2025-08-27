@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 
 namespace meph {
-    public class Character {
+    public class Character : Card {
         public enum STAR {
             NONE = 0,
             FOUR = 4,
@@ -120,7 +120,7 @@ namespace meph {
         public int AbsoluteDamage { get => GetEffectiveStat ( ParamKeys.AbsoluteDamage ); internal set => _absoluteDamage = value; }
 
         // Equiped cards are stored in a dictionary with their type as the key
-        public Dictionary<Card.TYPE, Card> EquippedSlots { get; internal set; } = new ( );
+        public Dictionary<TYPE, Card> EquippedSlots { get; internal set; } = new ( );
 
         // This variable represents Factors (and other status effects) as a bitfield 
         // Do NOT use directly to apply effects, use FactorManager instead   
@@ -131,7 +131,7 @@ namespace meph {
         // &   : Bitwise AND (check flag)           -> (statusEffects & STATUS_EFFECT.BURNING) != 0
 
         // Constructor
-        public Character ( CharacterData data ) {
+        public Character ( CharacterData data ) : base ( data ) {
             CharName = data.charName;
             Star = data.star;
             EssenceType = data.essenceType;
@@ -145,14 +145,25 @@ namespace meph {
             MP = data.maxMP;
             UP = 0;
             StatusEffects = STATUS_EFFECT.NONE;
-            EquippedSlots = new Dictionary<Card.TYPE, Card> ( );
+            EquippedSlots = new Dictionary<TYPE, Card> ( );
 
             DEF = data.DEF;
             EssenceDEF = data.essenceDEF;
 
             CritRate = data.critRate;
             CritDamage = data.critDamage;
+
+            // Card constructor overwrites
+            OwnerCharacter = CharName;
+            Id = CharName.Replace ( " ", "_" ).ToLowerInvariant ( );
+            Name = CharName;
+            Type = TYPE.C;
+
         }
+
+        public override bool IsSwift { get; protected set; } = false;
+        public override bool IsUsable { get; protected set; } = false;
+        public override bool HasPassive { get; protected set; } = true;
 
         private int GetBaseStat ( string paramKey ) {
             return paramKey switch {

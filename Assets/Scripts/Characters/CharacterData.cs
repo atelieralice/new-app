@@ -4,7 +4,7 @@ using Godot;
 
 namespace meph {
     [GlobalClass]
-    public partial class CharacterData : Resource {
+    public partial class CharacterData : CardData {
         [Export] public string charName;
         [Export] public Character.STAR star;
         [Export] public Character.ESSENCE_TYPE essenceType;

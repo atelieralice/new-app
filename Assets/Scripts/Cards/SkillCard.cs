@@ -8,20 +8,6 @@ namespace meph {
         public override bool HasPassive { get; protected set; } = false;
 
         // Constructor
-        public SkillCard ( CardData data ) {
-            OwnerCharacter = data.ownerCharacter;
-            Id = data.id;
-            Name = data.name;
-            Type = data.type;
-            Description = data.description;
-            Requirements = new Dictionary<string, int> ( data.requirements );
-            IsSwift = data.isSwift;
-            IsUsable = data.isUsable;
-            HasPassive = data.hasPassive;
-            var effectKey = string.IsNullOrEmpty ( data.effectKey ) ? data.id : data.effectKey;
-            var passiveEffectKey = string.IsNullOrEmpty ( data.passiveEffectKey ) ? data.id : data.passiveEffectKey;
-            Effect = CardEffectRegistry.EffectRegistry.TryGetValue ( effectKey, out var effect ) ? effect : null;
-            PassiveEffect = CardEffectRegistry.PassiveEffectRegistry.TryGetValue ( passiveEffectKey, out var passive ) ? passive : null;
-        }
+        public SkillCard ( CardData data ) : base ( data ) { }
     }
 }

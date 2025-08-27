@@ -35,6 +35,22 @@ namespace meph {
         public CardEffect Effect;
         public CardPassiveEffect PassiveEffect;
 
+        public Card ( CardData data ) {
+            OwnerCharacter = data.ownerCharacter;
+            Id = data.id;
+            Name = data.name;
+            Type = data.type;
+            Description = data.description;
+            Requirements = new Dictionary<string, int> ( data.requirements );
+            StatBonuses = new Dictionary<string, int> ( data.statBonuses );
+            IsSwift = data.isSwift;
+            IsUsable = data.isUsable;
+            HasPassive = data.hasPassive;
+            var effectKey = string.IsNullOrEmpty ( data.effectKey ) ? data.id : data.effectKey;
+            var passiveEffectKey = string.IsNullOrEmpty ( data.passiveEffectKey ) ? data.id : data.passiveEffectKey;
+            Effect = CardEffectRegistry.EffectRegistry.TryGetValue ( effectKey, out var effect ) ? effect : null;
+            PassiveEffect = CardEffectRegistry.PassiveEffectRegistry.TryGetValue ( passiveEffectKey, out var passive ) ? passive : null;
+        }
 
         public void Freeze ( int duration ) {
             if ( duration <= 0 ) { Unfreeze ( ); return; }

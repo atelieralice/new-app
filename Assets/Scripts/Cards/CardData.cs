@@ -1,8 +1,7 @@
 using Godot;
 
-// Every card is defined in this format
+// Every card is defined in this format (only exception is Character cards)
 // -Key fields are used to tie the card to its logic
-// For character cards, see CharacterCard.cs
 namespace meph {
     [GlobalClass]
     public partial class CardData : Resource {
@@ -14,8 +13,8 @@ namespace meph {
 
         [Export] public Godot.Collections.Dictionary<string, int> requirements = new ( );
         [Export] public Godot.Collections.Dictionary<string, int> statBonuses = new ( );
-        
-        [ExportGroup("Card Specific")]
+
+        [ExportGroup ( "Card Specific" )]
         [Export] public int maxPotion;
         [Export] public int maxUP;
 
@@ -25,7 +24,7 @@ namespace meph {
         [Export] public bool hasPassive;
 
         // Used as reference to logic
-        [ExportCategory("Effect Keys")]
+        [ExportCategory ( "Effect Keys" )]
         [Export] public string effectKey;
         [Export] public string passiveEffectKey;
     }
